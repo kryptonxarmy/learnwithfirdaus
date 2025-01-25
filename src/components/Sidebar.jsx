@@ -15,21 +15,21 @@ export default function Sidebar() {
   };
 
   const adminMenu = [
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Beranda", link: "/dashboard" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Data", link: "/data" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Aktivitas", link: "/aktivitas" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Laporan", link: "/laporan" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Dokumen", link: "/dokumen" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Masukan dan Saran", link: "/masukan-saran" },
+    { icon: "/assets/sidebar/dashboard.svg", title: "Beranda", link: "/dashboard" },
+    { icon: "/assets/sidebar/data.svg", title: "Data", link: "/data" },
+    { icon: "/assets/sidebar/aktivitas.svg", title: "Aktivitas", link: "/aktivitas" },
+    { icon: "/assets/sidebar/laporan.svg", title: "Laporan", link: "/laporan" },
+    { icon: "/assets/sidebar/dokumen.svg", title: "Dokumen", link: "/dokumen" },
+    { icon: "/assets/sidebar/bantuan.svg", title: "Masukan dan Saran", link: "/masukan-saran" },
   ];
 
   const parentMenu = [
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Beranda", link: "/dashboard" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Data Anak", link: "/ortu/data-anak" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Aktivitas", link: "/ortu/aktivitas" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Laporan", link: "/ortu/laporan" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Dokumen", link: "/ortu/dokumen" },
-    { icon: "/assets/guru/icons/icon-dashboard.svg", title: "Bantuan", link: "/ortu/bantuan" },
+    { icon: "/assets/sidebar/dashboard.svg", title: "Beranda", link: "/dashboard" },
+    { icon: "/assets/sidebar/data.svg", title: "Data Anak", link: "/ortu/data-anak" },
+    { icon: "/assets/sidebar/aktivitas.svg", title: "Aktivitas", link: "/ortu/aktivitas" },
+    { icon: "/assets/sidebar/laporan.svg", title: "Laporan", link: "/ortu/laporan" },
+    { icon: "/assets/sidebar/dokumen.svg", title: "Dokumen", link: "/ortu/dokumen" },
+    { icon: "/assets/sidebar/bantuan.svg", title: "Bantuan", link: "/ortu/bantuan" },
   ];
 
   const menu = role === "ADMIN" ? adminMenu : parentMenu;

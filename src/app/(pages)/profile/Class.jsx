@@ -58,7 +58,7 @@ export default function Class() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newClass),
+        body: JSON.stringify({ ...newClass, semesterId: parseInt(newClass.semesterId) }),
       });
       const result = await res.json();
       if (result.success) {
@@ -78,12 +78,12 @@ export default function Class() {
   const handleEditClass = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/class/${editClass.id}`, {
+      const res = await fetch(`/api/class`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editClass),
+        body: JSON.stringify({ ...editClass, semesterId: parseInt(editClass.semesterId) }),
       });
       const result = await res.json();
       if (result.success) {
@@ -102,8 +102,12 @@ export default function Class() {
   const handleDeleteClass = async (id) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/class/${id}`, {
+      const res = await fetch(`/api/class`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
       });
       const result = await res.json();
       if (result.success) {
@@ -166,7 +170,7 @@ export default function Class() {
             />
             <select
               value={newClass.semesterId}
-              onChange={(e) => setNewClass({ ...newClass, semesterId: e.target.value })}
+              onChange={(e) => setNewClass({ ...newClass, semesterId: parseInt(e.target.value) })}
               className="p-2 border rounded w-full mt-2"
             >
               <option value="">Select Semester</option>
@@ -205,7 +209,7 @@ export default function Class() {
           />
           <select
             value={editClass.semesterId}
-            onChange={(e) => setEditClass({ ...editClass, semesterId: e.target.value })}
+            onChange={(e) => setEditClass({ ...editClass, semesterId: parseInt(e.target.value) })}
             className="p-2 border rounded w-full mt-2"
           >
             <option value="">Select Semester</option>

@@ -13,7 +13,7 @@ const Stepper = ({ steps, currentStep }) => {
               index === currentStep ? "bg-primary text-white border-primary" : "bg-white text-gray-500 border-primary"
             }`}
           >
-            {index === currentStep ? <Check className="text-white" /> : index + 1}
+            {index === currentStep ? <Check className="text-white" /> : ""}
           </div>
           {index < steps.length - 1 && (
             <div className="flex-1 h-2 bg-gray-300 mx-2 relative">

@@ -1,4 +1,4 @@
-// /pages/api/coreActivity/index.js
+// /api/admin/aktivitas/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -7,22 +7,44 @@ const prisma = new PrismaClient();
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const classId = searchParams.get('classId');
+  const semesterId = searchParams.get('semesterId');
+  const academicYearId = searchParams.get('academicYearId');
 
   try {
     let coreActivities;
-    if (classId) {
+    if (classId || semesterId || academicYearId) {
       coreActivities = await prisma.coreActivity.findMany({
-        where: { classId: parseInt(classId) },
+        where: {
+          ...(classId && { classId: parseInt(classId) }),
+          ...(semesterId && { class: { semesterId: parseInt(semesterId) } }),
+          ...(academicYearId && { learningModule: { semester: { academicYearId: parseInt(academicYearId) } } }),
+        },
         include: {
           class: true,
-          learningModule: true,
+          learningModule: {
+            include: {
+              semester: {
+                include: {
+                  academicYear: true,
+                },
+              },
+            },
+          },
         },
       });
     } else {
       coreActivities = await prisma.coreActivity.findMany({
         include: {
           class: true,
-          learningModule: true,
+          learningModule: {
+            include: {
+              semester: {
+                include: {
+                  academicYear: true,
+                },
+              },
+            },
+          },
         },
       });
     }

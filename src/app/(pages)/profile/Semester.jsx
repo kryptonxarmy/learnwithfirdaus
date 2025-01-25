@@ -60,8 +60,9 @@ export default function Semester() {
         },
         body: JSON.stringify({
           ...newSemester,
-          number: parseInt(newSemester.number), // Ensure number is posted as an integer
-          weeks: parseInt(newSemester.weeks), // Ensure weeks is posted as an integer
+          number: parseInt(newSemester.number) || 0, // Ensure number is posted as an integer
+          academicYearId: parseInt(newSemester.academicYearId) || 0, // Ensure academicYearId is posted as an integer
+          weeks: parseInt(newSemester.weeks) || 0, // Ensure weeks is posted as an integer
         }),
       });
       const result = await res.json();
@@ -82,15 +83,16 @@ export default function Semester() {
   const handleEditSemester = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/semester/${editSemester.id}`, {
+      const res = await fetch(`/api/semester`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...editSemester,
-          number: parseInt(editSemester.number), // Ensure number is posted as an integer
-          weeks: parseInt(editSemester.weeks), // Ensure weeks is posted as an integer
+          number: parseInt(editSemester.number) || 0, // Ensure number is posted as an integer
+          academicYearId: parseInt(editSemester.academicYearId) || 0, // Ensure academicYearId is posted as an integer
+          weeks: parseInt(editSemester.weeks) || 0, // Ensure weeks is posted as an integer
         }),
       });
       const result = await res.json();
@@ -110,8 +112,12 @@ export default function Semester() {
   const handleDeleteSemester = async (id) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/semester/${id}`, {
+      const res = await fetch(`/api/semester`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
       });
       const result = await res.json();
       if (result.success) {

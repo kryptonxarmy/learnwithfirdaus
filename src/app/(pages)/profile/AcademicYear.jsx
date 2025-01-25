@@ -107,9 +107,9 @@ export default function AcademicYear() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Academic Years</h1>
       {loading && <div className="loader"></div>}
-      <Button onClick={() => setIsDialogOpen(true)} className="bg-primary text-white p-2 rounded mb-4">
+      {/* <Button onClick={() => setIsDialogOpen(true)} className="bg-primary text-white p-2 rounded mb-4">
         Add Academic Year
-      </Button>
+      </Button> */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {academicYears.map((year) => (
           <div key={year.id} className="bg-white p-4 rounded shadow">

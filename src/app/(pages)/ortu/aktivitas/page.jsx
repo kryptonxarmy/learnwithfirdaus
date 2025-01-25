@@ -20,7 +20,7 @@ export default function KegiatanIntiOrtu() {
   }, []);
 
   useEffect(() => {
-    if (selectedChild) {
+    if (selectedChild && selectedSemester && selectedAcademicYear) {
       const child = children.find((child) => child.id === parseInt(selectedChild));
       if (child) {
         fetchKegiatanInti(child.classId);
@@ -30,15 +30,10 @@ export default function KegiatanIntiOrtu() {
 
   const fetchKegiatanInti = async (classId) => {
     try {
-      const res = await fetch(`/api/admin/aktivitas?classId=${classId}`);
+      const res = await fetch(`/api/admin/aktivitas?classId=${classId}&semesterId=${selectedSemester}&academicYearId=${selectedAcademicYear}`);
       const data = await res.json();
       if (data.success) {
-        const filteredActivities = data.coreActivities.filter(
-          (activity) =>
-            activity.class.semesterId === parseInt(selectedSemester) &&
-            activity.learningModule.semesterId === parseInt(selectedAcademicYear)
-        );
-        setTableData(filteredActivities);
+        setTableData(data.coreActivities);
       } else {
         console.error("Failed to fetch kegiatan inti:", data.message);
       }
@@ -173,7 +168,7 @@ export default function KegiatanIntiOrtu() {
           </Button>
         </div>
       </div>
-      {tableData.length === 0 ? (
+      {tableData?.length === 0 ? (
         <div className="flex justify-center border-2 border-primary p-3 rounded-xl shadow-lg items-center">
           <p className="font-semibold">Pilih filter yang anda inginkan</p>
         </div>

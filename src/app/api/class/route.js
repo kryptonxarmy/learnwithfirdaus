@@ -12,7 +12,7 @@ export async function POST(req) {
       data: {
         name,
         ageGroup,
-        semesterId
+        semesterId: parseInt(semesterId),
       },
     });
     return NextResponse.json({ success: true, class: newClass });
@@ -25,6 +25,37 @@ export async function GET(req) {
   try {
     const classes = await prisma.class.findMany();
     return NextResponse.json({ success: true, classes });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error.message });
+  }
+}
+
+export async function PUT(req) {
+  const { id, name, ageGroup, semesterId } = await req.json();
+
+  try {
+    const updatedClass = await prisma.class.update({
+      where: { id: parseInt(id) },
+      data: {
+        name,
+        ageGroup,
+        semesterId: parseInt(semesterId),
+      },
+    });
+    return NextResponse.json({ success: true, class: updatedClass });
+  } catch (error) {
+    return NextResponse.json({ success: false, error: error.message });
+  }
+}
+
+export async function DELETE(req) {
+  const { id } = await req.json();
+
+  try {
+    await prisma.class.delete({
+      where: { id: parseInt(id) },
+    });
+    return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });
   }

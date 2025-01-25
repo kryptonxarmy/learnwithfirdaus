@@ -215,7 +215,8 @@ export default function Page() {
               <div className="flex gap-4 mt-4 items-center">
                 <img src="/assets/guru/icons/icon-message.svg" className="bg-[#FFE0EB] rounded-xl p-4" alt="msg" />
                 <div className="flex flex-col gap-2">
-                  <p className="font-semibold">Orang Tua</p>
+                  
+                  <p className="font-semibold">{role === "PARENT" ? "Admin" : "Orang Tua"}</p>
                   <p className="text-gray-300">Pesan Baru!</p>
                 </div>
                 <Link href={"/notifikasi"}>
