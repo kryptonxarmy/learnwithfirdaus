@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import React from "react";
 
-export default function DetailPresensi({ data }) {
+export default function DetailPresensi({ data, onBack }) {
   if (!data) {
     return <div>Loading...</div>;
   }
@@ -59,6 +60,9 @@ export default function DetailPresensi({ data }) {
             Keterangan
           </label>
           <Input type="text" name="remarks" id="remarks" value={data.remarks || ""} readOnly className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+        </div>
+        <div className="mt-4">
+          <Button onClick={onBack}>Kembali</Button>
         </div>
       </div>
     </div>

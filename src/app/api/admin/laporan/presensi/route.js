@@ -1,4 +1,4 @@
-// /pages/api/attendance/index.js
+// /pages/api/admin/laporan/presensi/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -66,8 +66,8 @@ export async function POST(req) {
         childId: childId ? parseInt(childId) : null,
         teacherId: teacherId ? parseInt(teacherId) : null,
         status,
-        arrivalTime: arrivalTime ? new Date(`${date}T${arrivalTime}:00`) : null,
-        departureTime: departureTime ? new Date(`${date}T${departureTime}:00`) : null,
+        arrivalTime: arrivalTime ? new Date(arrivalTime).toISOString() : null,
+        departureTime: departureTime ? new Date(departureTime).toISOString() : null,
         remarks,
         penjemput,
         pengantar,
@@ -94,8 +94,8 @@ export async function PUT(req) {
         child: childId ? { connect: { id: parseInt(childId) } } : { disconnect: true },
         teacher: teacherId ? { connect: { id: parseInt(teacherId) } } : { disconnect: true },
         status,
-        arrivalTime: arrivalTime ? new Date(`${date}T${arrivalTime}:00`) : null,
-        departureTime: departureTime ? new Date(`${date}T${departureTime}:00`) : null,
+        arrivalTime: arrivalTime ? new Date(arrivalTime).toISOString() : null,
+        departureTime: departureTime ? new Date(departureTime).toISOString() : null,
         remarks,
         penjemput,
         pengantar,

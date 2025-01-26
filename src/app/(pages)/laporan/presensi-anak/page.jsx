@@ -109,6 +109,8 @@ export default function Page() {
           ...formData,
           semesterId: selectedSemester,
           academicYearId: selectedAcademicYear,
+          arrivalTime: formData.arrivalTime ? `${formData.date}T${formData.arrivalTime}:00` : null,
+          departureTime: formData.departureTime ? `${formData.date}T${formData.departureTime}:00` : null,
         }),
       });
       const data = await res.json();
@@ -161,7 +163,7 @@ export default function Page() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch("/api/admin/laporan/presensi", {
+      const res = await fetch("/api/attendance", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

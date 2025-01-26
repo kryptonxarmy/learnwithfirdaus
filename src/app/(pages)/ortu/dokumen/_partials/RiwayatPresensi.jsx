@@ -42,10 +42,14 @@ export default function RiwayatPresensi({ onBackToList }) {
     setSelectedAttendance(attendance);
   };
 
+  const handleBack = () => {
+    setSelectedAttendance(null);
+  };
+
   return (
     <div>
       {selectedAttendance ? (
-        <DetailPresensi data={selectedAttendance} />
+        <DetailPresensi data={selectedAttendance} onBack={handleBack} />
       ) : (
         <div>
           <div className="flex flex-col gap-6">
