@@ -109,8 +109,6 @@ export default function Page() {
           ...formData,
           semesterId: selectedSemester,
           academicYearId: selectedAcademicYear,
-          arrivalTime: formData.arrivalTime ? `${formData.date}T${formData.arrivalTime}:00` : null,
-          departureTime: formData.departureTime ? `${formData.date}T${formData.departureTime}:00` : null,
         }),
       });
       const data = await res.json();
@@ -147,8 +145,8 @@ export default function Page() {
       type: item.type,
       childId: item.childId,
       status: item.status,
-      arrivalTime: item.arrivalTime ? item.arrivalTime.split("T")[1].substring(0, 5) : "",
-      departureTime: item.departureTime ? item.departureTime.split("T")[1].substring(0, 5) : "",
+      arrivalTime: item.arrivalTime || "",
+      departureTime: item.departureTime || "",
       remarks: item.remarks,
       penjemput: item.penjemput,
       pengantar: item.pengantar,
@@ -211,7 +209,9 @@ export default function Page() {
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-4" onClick={() => setIsDialogOpen(true)}>Tambah Presensi</Button>
+          <Button className="mb-4" onClick={() => setIsDialogOpen(true)}>
+            Tambah Presensi
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -295,8 +295,8 @@ export default function Page() {
               <TableCell className="text-center">{new Date(item.date).toLocaleDateString()}</TableCell>
               <TableCell className="text-center">{item.child ? item.child.name : "-"}</TableCell>
               <TableCell className="text-center">{item.status === "present" ? item.pengantar : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" && item.arrivalTime ? new Date(item.arrivalTime).toLocaleTimeString() : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" && item.departureTime ? new Date(item.departureTime).toLocaleTimeString() : "-"}</TableCell>
+              <TableCell className="text-center">{item.status === "present" && item.arrivalTime ? item.arrivalTime : "-"}</TableCell>
+              <TableCell className="text-center">{item.status === "present" && item.departureTime ? item.departureTime : "-"}</TableCell>
               <TableCell className="text-center">{item.status === "present" ? item.penjemput : "-"}</TableCell>
               <TableCell className="text-center">
                 <span
@@ -312,8 +312,12 @@ export default function Page() {
                 </span>
               </TableCell>
               <TableCell className="text-center">
-                <Button className="mr-2" onClick={() => handleEdit(item)}>Edit</Button>
-                <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>Delete</Button>
+                <Button className="mr-2" onClick={() => handleEdit(item)}>
+                  Edit
+                </Button>
+                <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>
+                  Delete
+                </Button>
               </TableCell>
             </TableRow>
           ))}

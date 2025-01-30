@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import AddActivityModal from "./_partials/AddActivtyModal";
 import Calendar from "./_partials/Calendar";
-import { Check } from "lucide-react";
+import { Check, Trash } from "lucide-react";
 import useUser from "@/hooks/useUser";
 
 export default function Page() {
@@ -12,13 +12,11 @@ export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    console.log(role)
     const fetchActivities = async () => {
       const res = await fetch("/api/admin/kalenderAkademik");
       const data = await res.json();
       if (data.success) {
         setActivities(data.academicCalendar);
-        console.log(data.academicCalendar);
       } else {
         console.error("Failed to fetch activities:", data.message);
       }
@@ -36,7 +34,7 @@ export default function Page() {
         body: JSON.stringify(activity),
       });
       const newActivity = await res.json();
-      setActivities((prevActivities) => [...prevActivities, newActivity]);
+      setActivities((prevActivities) => [...prevActivities, newActivity.academicCalendar]);
     } catch (error) {
       console.error("Failed to add activity:", error);
     }
@@ -45,7 +43,7 @@ export default function Page() {
   const toggleComplete = async (id) => {
     try {
       const activity = activities.find((activity) => activity.id === id);
-      const res = await fetch(`/api/admin/kalenderAkademik/updateStatus`, {
+      const res = await fetch(`/api/admin/kalenderAkademik`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -60,6 +58,26 @@ export default function Page() {
       }
     } catch (error) {
       console.error("Failed to update activity:", error);
+    }
+  };
+
+  const deleteActivity = async (id) => {
+    try {
+      const res = await fetch(`/api/admin/kalenderAkademik`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setActivities((prevActivities) => prevActivities.filter((activity) => activity.id !== id));
+      } else {
+        console.error("Failed to delete activity:", data.message);
+      }
+    } catch (error) {
+      console.error("Failed to delete activity:", error);
     }
   };
 
@@ -93,6 +111,11 @@ export default function Page() {
                   <p className="text-gray-700 font-bold">{activity.activity}</p>
                   <p className="text-gray-500">{activity.description}</p>
                 </div>
+                {role !== "PARENT" && (
+                  <div className="ml-auto my-auto cursor-pointer" onClick={() => deleteActivity(activity.id)}>
+                    <Trash className="text-red-500" />
+                  </div>
+                )}
               </div>
             ))}
           </div>

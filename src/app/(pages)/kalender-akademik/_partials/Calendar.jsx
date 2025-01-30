@@ -1,49 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek, isToday, isSameDay } from 'date-fns';
+import React, { useState } from 'react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, addMonths, subMonths, startOfWeek, endOfWeek, isToday } from 'date-fns';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import AddActivityModal from './AddActivtyModal';
 
-
-const Calendar = () => {
+const Calendar = ({ activities }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activities, setActivities] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      const res = await fetch('/api/admin/kalenderAkademik');
-      const data = await res.json();
-      if (data.success) {
-        setActivities(data.academicCalendar);
-      } else {
-        console.error('Failed to fetch activities:', data.message);
-      }
-    };
-    fetchActivities();
-  }, []);
-
-  const addActivity = async (activity) => {
-    try {
-      const res = await fetch('/api/admin/kalenderAkademik', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(activity),
-      });
-      const newActivity = await res.json();
-      if (newActivity.success) {
-        setActivities((prevActivities) => [...prevActivities, newActivity.academicCalendar]);
-      } else {
-        console.error('Failed to add activity:', newActivity.message);
-      }
-    } catch (error) {
-      console.error('Failed to add activity:', error);
-    }
-  };
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -140,7 +104,6 @@ const Calendar = () => {
           ))}
         </div>
       </div>
-      <AddActivityModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSubmit={addActivity} />
     </div>
   );
 };

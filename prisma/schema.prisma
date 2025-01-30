@@ -110,8 +110,8 @@ model Attendance {
   status         String // "present", "absent", "excused"
   pengantar      String? // optional who accompanied
   penjemput      String? // optional who picked up
-  arrivalTime    DateTime?
-  departureTime  DateTime?
+  arrivalTime    String?
+  departureTime  String?
   remarks        String?
   child          Child?       @relation(fields: [childId], references: [id], onDelete: Cascade)
   teacher        Teacher?     @relation(fields: [teacherId], references: [id])

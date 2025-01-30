@@ -131,8 +131,8 @@ export default function RiwayatPresensi({ onBackToList }) {
                         {item.status === "present" ? "Hadir" : item.status === "excused" ? "Sakit" : "Alpa"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-center">{item.arrivalTime ? new Date(item.arrivalTime).toLocaleTimeString() : "-"}</TableCell>
-                    <TableCell className="text-center">{item.departureTime ? new Date(item.departureTime).toLocaleTimeString() : "-"}</TableCell>
+                    <TableCell className="text-center">{item.arrivalTime ? item.arrivalTime : "-"}</TableCell>
+                    <TableCell className="text-center">{item.departureTime ? item.departureTime : "-"}</TableCell>
                     <TableCell className="text-center">{item.remarks}</TableCell>
                     <TableCell className="text-center">
                       <Button onClick={() => handleDetailClick(item)}>Detail</Button>

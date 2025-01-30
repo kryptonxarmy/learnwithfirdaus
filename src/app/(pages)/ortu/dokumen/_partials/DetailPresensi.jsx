@@ -41,7 +41,7 @@ export default function DetailPresensi({ data, onBack }) {
                 <p className="text-sm font-medium text-gray-700">Nama Pengantar</p>
                 <p className="mb-2">{isPresent ? data.pengantar : "-"}</p>
               </div>
-              <p className="text-3xl font-bold">{isPresent ? (data.arrivalTime ? new Date(data.arrivalTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-") : "-"}</p>
+              <p className="text-3xl font-bold">{isPresent ? (data.arrivalTime ? data.arrivalTime : "-") : "-"}</p>
             </div>
           </div>
           <div className="w-1/2 pl-2 bg-gradient-to-br from-purple-200 to-purple-100 px-8 py-4 rounded-md shadow-md">
@@ -51,7 +51,7 @@ export default function DetailPresensi({ data, onBack }) {
                 <p className="text-sm font-medium text-gray-700">Nama Penjemput</p>
                 <p className="mb-2">{isPresent ? data.penjemput : "-"}</p>
               </div>
-              <p className="text-3xl font-bold">{isPresent ? (data.departureTime ? new Date(data.departureTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-") : "-"}</p>
+              <p className="text-3xl font-bold">{isPresent ? (data.departureTime ? data.departureTime : "-") : "-"}</p>
             </div>
           </div>
         </div>
