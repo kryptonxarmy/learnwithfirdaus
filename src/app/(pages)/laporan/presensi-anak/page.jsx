@@ -161,7 +161,7 @@ export default function Page() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch("/api/attendance", {
+      const res = await fetch("/api/admin/laporan/presensi", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

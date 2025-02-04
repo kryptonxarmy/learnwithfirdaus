@@ -141,8 +141,8 @@ export default function Page() {
       type: item.type,
       teacherId: item.teacherId,
       status: item.status,
-      arrivalTime: item.arrivalTime ? item.arrivalTime.split("T")[1].substring(0, 5) : "",
-      departureTime: item.departureTime ? item.departureTime.split("T")[1].substring(0, 5) : "",
+      arrivalTime: item.arrivalTime || "",
+      departureTime: item.departureTime || "",
       remarks: item.remarks,
       semesterId: item.semesterId,
       academicYearId: item.academicYearId,
@@ -272,8 +272,8 @@ export default function Page() {
               <TableCell className="text-center">{index + 1}</TableCell>
               <TableCell className="text-center">{new Date(item.date).toLocaleDateString()}</TableCell>
               <TableCell className="text-center">{item.teacher ? item.teacher.name : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" ? new Date(item.arrivalTime).toLocaleTimeString() : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" ? new Date(item.departureTime).toLocaleTimeString() : "-"}</TableCell>
+              <TableCell className="text-center">{item.status === "present" ? item.arrivalTime : "-"}</TableCell>
+              <TableCell className="text-center">{item.status === "present" ? item.departureTime : "-"}</TableCell>
               <TableCell className="text-center">
                 <span
                   className={`badge ${

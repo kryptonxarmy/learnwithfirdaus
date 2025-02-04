@@ -60,13 +60,7 @@ export default function RiwayatPresensi({ onBackToList }) {
                   <label htmlFor="child" className="block text-sm font-medium text-gray-700">
                     Pilih Anak
                   </label>
-                  <select
-                    id="child"
-                    name="child"
-                    value={selectedChild}
-                    onChange={(e) => setSelectedChild(e.target.value)}
-                    className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                  >
+                  <select id="child" name="child" value={selectedChild} onChange={(e) => setSelectedChild(e.target.value)} className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                     {children.map((child) => (
                       <option key={child.id} value={child.id}>
                         {child.name}
@@ -76,12 +70,12 @@ export default function RiwayatPresensi({ onBackToList }) {
                 </div>
                 <div>
                   <p className="text-gray-400">Nama Anak</p>
-                  <p className="text-primary font-bold">{children.length > 0 ? children.find(child => child.id.toString() === selectedChild)?.name : "Nama Anak"}</p>
+                  <p className="text-primary font-bold">{children.length > 0 ? children.find((child) => child.id.toString() === selectedChild)?.name : "Nama Anak"}</p>
                 </div>
                 <div className="flex justify-between">
                   <div>
                     <p className="text-gray-400">Kelompok Usia</p>
-                    <p className="text-primary font-bold">{children.length > 0 ? children.find(child => child.id.toString() === selectedChild)?.class.ageGroup : "Kelompok Usia"}</p>
+                    <p className="text-primary font-bold">{children.length > 0 ? children.find((child) => child.id.toString() === selectedChild)?.class.ageGroup : "Kelompok Usia"}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Semester</p>
@@ -131,8 +125,8 @@ export default function RiwayatPresensi({ onBackToList }) {
                         {item.status === "present" ? "Hadir" : item.status === "excused" ? "Sakit" : "Alpa"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-center">{item.arrivalTime ? item.arrivalTime : "-"}</TableCell>
-                    <TableCell className="text-center">{item.departureTime ? item.departureTime : "-"}</TableCell>
+                    <TableCell className="text-center">{isPresent ? (data.arrivalTime ? data.arrivalTime : "-") : "-"}</TableCell>
+                    <TableCell className="text-center">{isPresent ? (data.departureTime ? data.departureTime : "-") : "-"}</TableCell>
                     <TableCell className="text-center">{item.remarks}</TableCell>
                     <TableCell className="text-center">
                       <Button onClick={() => handleDetailClick(item)}>Detail</Button>
