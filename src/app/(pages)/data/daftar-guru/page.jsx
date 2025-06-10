@@ -65,6 +65,82 @@ export default function Page() {
     }
   };
 
+  // Fungsi untuk mencetak hanya tabel dengan iframe
+  const handlePrint = () => {
+    const printContent = document.getElementById("printableTable").innerHTML; // Ambil isi tabel dan judul
+    
+    // Membuat iframe untuk menampilkan konten cetak
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentWindow.document;
+    
+    // Menambahkan HTML ke iframe
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <title>Print</title>
+          <style>
+            @media print {
+              body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                color: #000;
+              }
+
+              h1 {
+                font-size: 24px;
+                text-align: center;
+                margin-bottom: 20px;
+              }
+
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+              }
+
+              th, td {
+                border: 1px solid #ddd;
+                padding: 10px;
+                text-align: left;
+              }
+
+              th {
+                background-color: #f3f3f3;
+                font-weight: bold;
+              }
+
+              /* Menambah jarak di antara tabel */
+              table {
+                margin-top: 20px;
+              }
+
+              /* Menyembunyikan kolom Aksi pada cetakan */
+              .no-print {
+                display: none;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          
+          ${printContent}
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    // Mencetak iframe
+    iframe.contentWindow.print();
+    document.body.removeChild(iframe); // Menghapus iframe setelah pencetakan
+  };
+
   return (
     <div className="flex flex-col gap-8 p-4">
       <div className="flex justify-between bg-primary text-primary-foreground rounded-xl shadow-lg p-8">
@@ -108,48 +184,114 @@ export default function Page() {
         <FormGuru status={isEditGuru ? "edit" : "tambah"} data={editData} onKembali={handleKembali} fetchTeachers={fetchTeachers} />
       ) : (
         <>
-          <h1 className="text-xl font-bold">Daftar Guru</h1>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Guru</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>No Telp</TableHead>
-                <TableHead>NIP</TableHead>
-                <TableHead>Tanggal Lahir</TableHead>
-                <TableHead>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {teachers.map((teacher) => (
-                <TableRow key={teacher.id}>
-                  <TableCell>{teacher.name}</TableCell>
-                  <TableCell>{teacher.email}</TableCell>
-                  <TableCell>{teacher.phone}</TableCell>
-                  <TableCell>{teacher.nip}</TableCell>
-                  <TableCell>{new Date(teacher.birthDate).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Button onClick={() => handleEdit(teacher)} className="bg-primary text-white font-semibold rounded-xl px-4">
-                      Edit
-                    </Button>
-                    <Button onClick={() => handleDelete(teacher.id)} className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2">
-                      Delete
-                    </Button>
-                  </TableCell>
+          <div id="printableTable">
+            {/* Menambahkan teks "Daftar Guru" di atas tabel */}
+            <h1 className="text-xl font-bold mb-4">Daftar Guru</h1> {/* Judul Daftar Guru */}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nama Guru</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>No Telp</TableHead>
+                  <TableHead>NIP</TableHead>
+                  <TableHead>Tanggal Lahir</TableHead>
+                  <TableHead className="no-print">Aksi</TableHead> {/* Kolom Aksi yang disembunyikan saat pencetakan */}
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="flex gap-4 justify-end items-center">
-            <Button onClick={handleTambah} className="bg-primary text-white font-semibold rounded-xl px-4">
+              </TableHeader>
+              <TableBody>
+                {teachers.map((teacher) => (
+                  <TableRow key={teacher.id}>
+                    <TableCell>{teacher.name}</TableCell>
+                    <TableCell>{teacher.email}</TableCell>
+                    <TableCell>{teacher.phone}</TableCell>
+                    <TableCell>{teacher.nip}</TableCell>
+                    <TableCell>{new Date(teacher.birthDate).toLocaleDateString()}</TableCell>
+                    <TableCell className="no-print">
+                      <Button onClick={() => handleEdit(teacher)} className="bg-primary text-white font-semibold rounded-xl px-4">
+                        Edit
+                      </Button>
+                      <Button onClick={() => handleDelete(teacher.id)} className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2">
+                        Hapus
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {/* Tombol Cetak dan Tambah Guru diletakkan di bawah, berjejer */}
+          <div className="flex gap-4 justify-end items-center mt-8">
+            <Button
+              onClick={handlePrint} // Panggil fungsi untuk mencetak
+              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 no-print"
+            >
+              Cetak
+            </Button>
+            <Button
+              onClick={handleTambah}
+              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4"
+            >
               Tambah Guru
             </Button>
             <Link href={"/data"}>
-              <Button className="bg-primary text-white font-semibold rounded-xl px-4">KEMBALI</Button>
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4">
+                KEMBALI
+              </Button>
             </Link>
           </div>
         </>
       )}
+
+      {/* Menambahkan CSS @media print langsung di dalam komponen */}
+      <style jsx global>{`
+        @media print {
+          /* Menyembunyikan elemen-elemen yang tidak perlu dicetak */
+          .no-print {
+            display: none !important;
+          }
+
+          /* Menyembunyikan tombol "Tambah Guru", "Cetak", dan "Kembali" pada saat pencetakan */
+          .flex {
+            display: none !important;
+          }
+
+          /* Menyembunyikan header bagian atas saat mencetak */
+          .bg-primary {
+            display: none !important;
+          }
+
+          /* Memperbaiki tampilan tabel saat dicetak */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+          }
+
+          th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+          }
+
+          th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+          }
+
+          /* Menambahkan margin dan padding untuk tabel */
+          table {
+            margin-top: 20px;
+            padding: 10px;
+          }
+
+          h1 {
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
