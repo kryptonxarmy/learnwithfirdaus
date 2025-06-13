@@ -37,6 +37,7 @@ export default function Page() {
     fetchChildren();
     fetchSemesters();
     fetchAcademicYears();
+    // eslint-disable-next-line
   }, [selectedSemester, selectedAcademicYear]);
 
   const fetchAttendance = async () => {
@@ -183,10 +184,102 @@ export default function Page() {
     fetchAttendance();
   };
 
+  // PRINT ONLY TABLE
+  const handlePrint = () => {
+    const printContent = document.getElementById("print-area").innerHTML;
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+
+    doc.write(`
+      <html>
+        <head>
+          <title>Presensi Anak</title>
+          <style>
+            @page {
+              margin: 40px;
+            }
+            
+            body { 
+              font-family: Times New Roman, serif;
+              color: #000;
+              line-height: 1.5;
+              margin: 0;
+              padding: 0;
+            }
+
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 2px solid #000;
+              padding-bottom: 15px;
+            }
+
+            .header h1 {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+
+            .header p {
+              font-size: 16px;
+              margin: 0;
+            }
+
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+              page-break-inside: avoid;
+            }
+
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: center;
+              font-size: 14px;
+            }
+
+            th {
+              background-color: #f5f5f5;
+              font-weight: bold;
+            }
+
+            .badge {
+              padding: 4px 8px;
+              border-radius: 4px;
+              font-weight: bold;
+            }
+
+            .print-hide {
+              display: none !important;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>DAFTAR PRESENSI ANAK</h1>
+            <p>LearnWithFirdaus</p>
+          </div>
+          ${printContent}
+        </body>
+      </html>
+    `);
+
+    doc.close();
+    iframe.contentWindow.print();
+    document.body.removeChild(iframe);
+  };
+
   return (
     <div className="p-6">
       <h1 className="text-lg font-bold text-primary mb-4 mt-8">Riwayat Presensi</h1>
-      <div className="flex gap-4 mt-4">
+      <div className="flex gap-4 mt-4 print-hide">
         <select value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)} className="input">
           <option value="">Pilih Tahun Ajar</option>
           {academicYears.map((year) => (
@@ -209,7 +302,7 @@ export default function Page() {
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-4" onClick={() => setIsDialogOpen(true)}>
+          <Button className="mb-4 print-hide" onClick={() => setIsDialogOpen(true)}>
             Tambah Presensi
           </Button>
         </DialogTrigger>
@@ -274,58 +367,66 @@ export default function Page() {
           </form>
         </DialogContent>
       </Dialog>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center">No.</TableHead>
-            <TableHead className="text-center">Tanggal</TableHead>
-            <TableHead className="text-center">Nama Anak</TableHead>
-            <TableHead className="text-center">Pengantar</TableHead>
-            <TableHead className="text-center">Jam Datang</TableHead>
-            <TableHead className="text-center">Jam Pulang</TableHead>
-            <TableHead className="text-center">Penjemput</TableHead>
-            <TableHead className="text-center">Kehadiran</TableHead>
-            <TableHead className="text-center">Aksi</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {attendance.map((item, index) => (
-            <TableRow key={item.id}>
-              <TableCell className="text-center">{index + 1}</TableCell>
-              <TableCell className="text-center">{new Date(item.date).toLocaleDateString()}</TableCell>
-              <TableCell className="text-center">{item.child ? item.child.name : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" ? item.pengantar : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" && item.arrivalTime ? item.arrivalTime : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" && item.departureTime ? item.departureTime : "-"}</TableCell>
-              <TableCell className="text-center">{item.status === "present" ? item.penjemput : "-"}</TableCell>
-              <TableCell className="text-center">
-                <span
-                  className={`badge ${
-                    item.status === "present"
-                      ? "bg-green-500 px-4 py-2 rounded-lg text-white shadow-lg"
-                      : item.status === "excused"
-                      ? "bg-yellow-500 px-4 py-2 rounded-lg text-white shadow-lg"
-                      : "bg-red-500 px-4 py-2 rounded-lg text-white shadow-lg"
-                  }`}
-                >
-                  {item.status === "present" ? "Hadir" : item.status === "excused" ? "Sakit" : "Alpa"}
-                </span>
-              </TableCell>
-              <TableCell className="text-center">
-                <Button className="mr-2" onClick={() => handleEdit(item)}>
-                  Edit
-                </Button>
-                <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>
-                  Delete
-                </Button>
-              </TableCell>
+      <div id="print-area">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">No.</TableHead>
+              <TableHead className="text-center">Tanggal</TableHead>
+              <TableHead className="text-center">Nama Anak</TableHead>
+              <TableHead className="text-center">Pengantar</TableHead>
+              <TableHead className="text-center">Jam Datang</TableHead>
+              <TableHead className="text-center">Jam Pulang</TableHead>
+              <TableHead className="text-center">Penjemput</TableHead>
+              <TableHead className="text-center">Kehadiran</TableHead>
+              <TableHead className="text-center print-hide">Aksi</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="w-full flex justify-end mt-8">
+          </TableHeader>
+          <TableBody>
+            {attendance.map((item, index) => (
+              <TableRow key={item.id}>
+                <TableCell className="text-center">{index + 1}</TableCell>
+                <TableCell className="text-center">{new Date(item.date).toLocaleDateString()}</TableCell>
+                <TableCell className="text-center">{item.child ? item.child.name : "-"}</TableCell>
+                <TableCell className="text-center">{item.status === "present" ? item.pengantar : "-"}</TableCell>
+                <TableCell className="text-center">{item.status === "present" && item.arrivalTime ? item.arrivalTime : "-"}</TableCell>
+                <TableCell className="text-center">{item.status === "present" && item.departureTime ? item.departureTime : "-"}</TableCell>
+                <TableCell className="text-center">{item.status === "present" ? item.penjemput : "-"}</TableCell>
+                <TableCell className="text-center">
+                  <span
+                    className={`badge ${
+                      item.status === "present"
+                        ? "bg-green-500 px-4 py-2 rounded-lg text-white shadow-lg"
+                        : item.status === "excused"
+                        ? "bg-yellow-500 px-4 py-2 rounded-lg text-white shadow-lg"
+                        : "bg-red-500 px-4 py-2 rounded-lg text-white shadow-lg"
+                    }`}
+                  >
+                    {item.status === "present" ? "Hadir" : item.status === "excused" ? "Sakit" : "Alpa"}
+                  </span>
+                </TableCell>
+                <TableCell className="text-center print-hide">
+                  <Button className="mr-2" onClick={() => handleEdit(item)}>
+                    Edit
+                  </Button>
+                  <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="w-full flex justify-end mt-8 print-hide gap-2">
+        <Button
+          onClick={handlePrint}
+          className="bg-primary px-4 rounded-lg text-white font-semibold"
+        >
+          Cetak PDF
+        </Button>
         <Link href={"/laporan"}>
-          <Button className="bg-primary px-4 rounded-lg">Kembali</Button>
+          <Button className="bg-primary px-4 rounded-lg text-white font-semibold">Kembali</Button>
         </Link>
       </div>
     </div>

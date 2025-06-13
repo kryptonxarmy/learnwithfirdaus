@@ -29,12 +29,39 @@ export async function POST(req) {
   }
 }
 
-export async function GET(req) {
+export async function GET() {
   try {
-    const teachers = await prisma.teacher.findMany();
-    return NextResponse.json({ success: true, teachers });
+    const teachers = await prisma.teacher.findMany({
+      where: {
+        isDeleted: false
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    });
+
+    if (!teachers) {
+      return NextResponse.json({ 
+        success: false, 
+        message: "No teachers found",
+        teachers: [] 
+      });
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      teachers: teachers 
+    });
+
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message });
+    console.error("Database error:", error);
+    return NextResponse.json({ 
+      success: false, 
+      message: error.message || "Failed to fetch teachers",
+      teachers: [] 
+    }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

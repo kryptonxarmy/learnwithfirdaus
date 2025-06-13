@@ -2,10 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
-import FormAnak from "./FormAnak"; // Pastikan Anda mengimpor komponen FormAnak
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"; // Pastikan Anda mengimpor komponen Table
+import FormAnak from "./FormAnak";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { BookAudioIcon, CalendarCheck, GraduationCap, User } from "lucide-react";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 export default function Page() {
   const [isTambahAnak, setIsTambahAnak] = useState(false);
@@ -13,6 +14,8 @@ export default function Page() {
   const [isEditAnak, setIsEditAnak] = useState(false);
   const [editData, setEditData] = useState(null);
   const [children, setChildren] = useState([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteChildId, setDeleteChildId] = useState(null);
 
   useEffect(() => {
     fetchChildren();
@@ -44,19 +47,25 @@ export default function Page() {
     setEditData(null);
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteClick = (id) => {
+    setDeleteChildId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      const res = await fetch(`/api/admin/child`, {
-        method: "DELETE",
+      const res = await fetch(`/api/admin/child/softDelete`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id: deleteChildId }),
       });
 
       const data = await res.json();
       if (data.success) {
-        fetchChildren(); // Refresh the list after deletion
+        fetchChildren();
+        setIsDeleteDialogOpen(false);
       } else {
         console.error("Failed to delete child:", data.error);
       }
@@ -67,78 +76,88 @@ export default function Page() {
 
   // Fungsi untuk mencetak hanya tabel dengan iframe
   const handlePrint = () => {
-    const printContent = document.getElementById("printableTable").innerHTML; // Ambil isi tabel dan judul
-    
-    // Membuat iframe untuk menampilkan konten cetak
+    const printContent = document.getElementById("print-area").innerHTML;
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.width = '0px';
     iframe.style.height = '0px';
     iframe.style.border = 'none';
     document.body.appendChild(iframe);
-    
+
     const doc = iframe.contentWindow.document;
-    
-    // Menambahkan HTML ke iframe
-    doc.open();
+
     doc.write(`
       <html>
         <head>
-          <title>Print</title>
+          <title>Daftar Anak</title>
           <style>
-            @media print {
-              body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                color: #000;
-              }
+            @page {
+              margin: 40px;
+            }
+            
+            body { 
+              font-family: Times New Roman, serif;
+              color: #000;
+              line-height: 1.5;
+              margin: 0;
+              padding: 0;
+            }
 
-              h1 {
-                font-size: 24px;
-                text-align: center;
-                margin-bottom: 20px;
-              }
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 2px solid #000;
+              padding-bottom: 15px;
+            }
 
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-              }
+            .header h1 {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
 
-              th, td {
-                border: 1px solid #ddd;
-                padding: 10px;
-                text-align: left;
-              }
+            .header p {
+              font-size: 16px;
+              margin: 0;
+            }
 
-              th {
-                background-color: #f3f3f3;
-                font-weight: bold;
-              }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+              page-break-inside: avoid;
+            }
 
-              /* Menambah jarak di antara tabel */
-              table {
-                margin-top: 20px;
-              }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+              font-size: 14px;
+            }
 
-              /* Menyembunyikan kolom Aksi pada cetakan */
-              .no-print {
-                display: none;
-              }
+            th {
+              background-color: #f5f5f5;
+              font-weight: bold;
+            }
+
+            .print-hide {
+              display: none !important;
             }
           </style>
         </head>
         <body>
-          
+          <div class="header">
+            <h1>DAFTAR ANAK</h1>
+            <p>LearnWithFirdaus</p>
+          </div>
           ${printContent}
         </body>
       </html>
     `);
-    doc.close();
 
-    // Mencetak iframe
+    doc.close();
     iframe.contentWindow.print();
-    document.body.removeChild(iframe); // Menghapus iframe setelah pencetakan
+    document.body.removeChild(iframe);
   };
 
   return (
@@ -184,9 +203,7 @@ export default function Page() {
         <FormAnak status={isEditAnak ? "edit" : "tambah"} data={editData} onKembali={handleKembali} fetchChildren={fetchChildren} />
       ) : (
         <>
-          <div id="printableTable">
-            {/* Menambahkan teks "Daftar Anak" di atas tabel */}
-            <h1 className="text-xl font-bold mb-4">Daftar Anak</h1> {/* Judul Daftar Anak */}
+          <div id="print-area">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -195,7 +212,7 @@ export default function Page() {
                   <TableHead>Nomor Induk</TableHead>
                   <TableHead>Tanggal Lahir</TableHead>
                   <TableHead>Kelompok Usia</TableHead>
-                  <TableHead className="no-print">Aksi</TableHead> {/* Kolom Aksi yang disembunyikan saat pencetakan */}
+                  <TableHead className="print-hide">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -206,11 +223,17 @@ export default function Page() {
                     <TableCell>{child.studentId}</TableCell>
                     <TableCell>{new Date(child.birthDate).toLocaleDateString()}</TableCell>
                     <TableCell>{child.class.name}</TableCell>
-                    <TableCell className="no-print">
-                      <Button onClick={() => handleEdit(child)} className="bg-primary text-white font-semibold rounded-xl px-4">
+                    <TableCell className="print-hide">
+                      <Button 
+                        onClick={() => handleEdit(child)} 
+                        className="bg-primary text-white font-semibold rounded-xl px-4"
+                      >
                         Edit
                       </Button>
-                      <Button onClick={() => handleDelete(child.id)} className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2">
+                      <Button 
+                        onClick={() => handleDeleteClick(child.id)} 
+                        className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2"
+                      >
                         Hapus
                       </Button>
                     </TableCell>
@@ -220,71 +243,85 @@ export default function Page() {
             </Table>
           </div>
           
-          {/* Tombol Cetak dan Tambah Anak diletakkan di bawah, berjejer */}
           <div className="flex gap-4 justify-end items-center mt-8">
             <Button
-              onClick={handlePrint} // Panggil fungsi untuk mencetak
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 no-print"
+              onClick={handlePrint}
+              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
             >
-              Cetak
+              Cetak PDF
             </Button>
             <Button
               onClick={handleTambah}
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4"
+              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
             >
               Tambah Anak
             </Button>
             <Link href={"/data"}>
-              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4">
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
                 KEMBALI
+              </Button>
+            </Link>
+            {/* Tambahkan di navbar atau sidebar */}
+            <Link href="/data/daftar-anak/sampah">
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
+                Sampah
               </Button>
             </Link>
           </div>
         </>
       )}
 
-      {/* Menambahkan CSS @media print langsung di dalam komponen */}
+      {/* Tambahkan Dialog konfirmasi */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus data anak ini? 
+              Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              onClick={() => setIsDeleteDialogOpen(false)}
+              variant="outline"
+              className="bg-gray-100 hover:bg-gray-200"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <style jsx global>{`
         @media print {
-          /* Menyembunyikan elemen-elemen yang tidak perlu dicetak */
-          .no-print {
+          .print-hide {
             display: none !important;
           }
-
-          /* Menyembunyikan tombol "Tambah Anak", "Cetak", dan "Kembali" pada saat pencetakan */
-          .flex {
-            display: none !important;
-          }
-
-          /* Menyembunyikan header bagian atas saat mencetak */
-          .bg-primary {
-            display: none !important;
-          }
-
-          /* Memperbaiki tampilan tabel saat dicetak */
           table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
           }
-
           th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
           }
-
           th {
             background-color: #f2f2f2;
             font-weight: bold;
           }
-
-          /* Menambahkan margin dan padding untuk tabel */
           table {
             margin-top: 20px;
             padding: 10px;
           }
-
           h1 {
             font-size: 24px;
             text-align: center;

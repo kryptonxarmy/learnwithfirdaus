@@ -2,10 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import React, { useEffect, useState } from "react";
-import FormGuru from "./FormGuru"; // Pastikan Anda mengimpor komponen FormGuru
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table"; // Pastikan Anda mengimpor komponen Table
-import { BookAudioIcon, CalendarCheck, GraduationCap, User } from "lucide-react";
+import FormGuru from "./FormGuru";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
+import { CalendarCheck, GraduationCap, User } from "lucide-react";
 import Link from "next/link";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { formatDate } from "@/utils/dateFormat";
 
 export default function Page() {
   const [isTambahGuru, setIsTambahGuru] = useState(false);
@@ -13,6 +15,9 @@ export default function Page() {
   const [isEditGuru, setIsEditGuru] = useState(false);
   const [editData, setEditData] = useState(null);
   const [teachers, setTeachers] = useState([]);
+  // Add new states for delete dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deleteTeacherId, setDeleteTeacherId] = useState(null);
 
   useEffect(() => {
     fetchTeachers();
@@ -20,12 +25,31 @@ export default function Page() {
 
   const fetchTeachers = async () => {
     try {
-      const res = await fetch("/api/admin/teacher");
+      const res = await fetch("/api/admin/teacher", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
-      setTeachers(data.teachers);
-      setJumlahGuru(data.teachers.length);
+      
+      if (data.success) {
+        setTeachers(data.teachers);
+        setJumlahGuru(data.teachers.length);
+      } else {
+        console.error("Failed to fetch teachers:", data.message);
+        setTeachers([]);
+        setJumlahGuru(0);
+      }
     } catch (error) {
-      console.error("Failed to fetch teachers:", error);
+      console.error("Error fetching teachers:", error.message);
+      setTeachers([]);
+      setJumlahGuru(0);
     }
   };
 
@@ -44,101 +68,123 @@ export default function Page() {
     setEditData(null);
   };
 
-  const handleDelete = async (id) => {
+  // Modified delete handlers
+  const handleDeleteClick = (id) => {
+    setDeleteTeacherId(id);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      const res = await fetch(`/api/admin/teacher`, {
-        method: "DELETE",
+      const res = await fetch(`/api/admin/teacher/softDelete`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id: deleteTeacherId }),
       });
 
       const data = await res.json();
+      
       if (data.success) {
-        fetchTeachers(); // Refresh the list after deletion
+        fetchTeachers(); // Refresh data
+        setIsDeleteDialogOpen(false);
+        // Optional: Tambahkan notifikasi berhasil
+        alert("Data guru berhasil dipindahkan ke sampah");
       } else {
         console.error("Failed to delete teacher:", data.error);
+        alert("Gagal menghapus data guru");
       }
     } catch (error) {
-      console.error("Failed to delete teacher:", error);
+      console.error("Error:", error);
+      alert("Terjadi kesalahan saat menghapus data");
     }
   };
 
   // Fungsi untuk mencetak hanya tabel dengan iframe
   const handlePrint = () => {
-    const printContent = document.getElementById("printableTable").innerHTML; // Ambil isi tabel dan judul
-    
-    // Membuat iframe untuk menampilkan konten cetak
+    const printContent = document.getElementById("print-area").innerHTML;
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.width = '0px';
     iframe.style.height = '0px';
     iframe.style.border = 'none';
     document.body.appendChild(iframe);
-    
+
     const doc = iframe.contentWindow.document;
-    
-    // Menambahkan HTML ke iframe
-    doc.open();
+
     doc.write(`
       <html>
         <head>
-          <title>Print</title>
+          <title>Daftar Guru</title>
           <style>
-            @media print {
-              body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                color: #000;
-              }
+            @page {
+              margin: 40px;
+            }
+            
+            body { 
+              font-family: Times New Roman, serif;
+              color: #000;
+              line-height: 1.5;
+              margin: 0;
+              padding: 0;
+            }
 
-              h1 {
-                font-size: 24px;
-                text-align: center;
-                margin-bottom: 20px;
-              }
+            .header {
+              text-align: center;
+              margin-bottom: 20px;
+              border-bottom: 2px solid #000;
+              padding-bottom: 15px;
+            }
 
-              table {
-                width: 100%;
-                border-collapse: collapse;
-                margin: 20px 0;
-              }
+            .header h1 {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
 
-              th, td {
-                border: 1px solid #ddd;
-                padding: 10px;
-                text-align: left;
-              }
+            .header p {
+              font-size: 16px;
+              margin: 0;
+            }
 
-              th {
-                background-color: #f3f3f3;
-                font-weight: bold;
-              }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+              page-break-inside: avoid;
+            }
 
-              /* Menambah jarak di antara tabel */
-              table {
-                margin-top: 20px;
-              }
+            th, td {
+              border: 1px solid #ddd;
+              padding: 8px;
+              text-align: left;
+              font-size: 14px;
+            }
 
-              /* Menyembunyikan kolom Aksi pada cetakan */
-              .no-print {
-                display: none;
-              }
+            th {
+              background-color: #f5f5f5;
+              font-weight: bold;
+            }
+
+            .print-hide {
+              display: none !important;
             }
           </style>
         </head>
         <body>
-          
+          <div class="header">
+            <h1>DAFTAR GURU</h1>
+            <p>LearnWithFirdaus</p>
+          </div>
           ${printContent}
         </body>
       </html>
     `);
-    doc.close();
 
-    // Mencetak iframe
+    doc.close();
     iframe.contentWindow.print();
-    document.body.removeChild(iframe); // Menghapus iframe setelah pencetakan
+    document.body.removeChild(iframe);
   };
 
   return (
@@ -184,9 +230,7 @@ export default function Page() {
         <FormGuru status={isEditGuru ? "edit" : "tambah"} data={editData} onKembali={handleKembali} fetchTeachers={fetchTeachers} />
       ) : (
         <>
-          <div id="printableTable">
-            {/* Menambahkan teks "Daftar Guru" di atas tabel */}
-            <h1 className="text-xl font-bold mb-4">Daftar Guru</h1> {/* Judul Daftar Guru */}
+          <div id="print-area">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -195,7 +239,7 @@ export default function Page() {
                   <TableHead>No Telp</TableHead>
                   <TableHead>NIP</TableHead>
                   <TableHead>Tanggal Lahir</TableHead>
-                  <TableHead className="no-print">Aksi</TableHead> {/* Kolom Aksi yang disembunyikan saat pencetakan */}
+                  <TableHead className="print-hide">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -205,12 +249,15 @@ export default function Page() {
                     <TableCell>{teacher.email}</TableCell>
                     <TableCell>{teacher.phone}</TableCell>
                     <TableCell>{teacher.nip}</TableCell>
-                    <TableCell>{new Date(teacher.birthDate).toLocaleDateString()}</TableCell>
-                    <TableCell className="no-print">
+                    <TableCell>{formatDate(teacher.birthDate)}</TableCell>
+                    <TableCell className="print-hide">
                       <Button onClick={() => handleEdit(teacher)} className="bg-primary text-white font-semibold rounded-xl px-4">
                         Edit
                       </Button>
-                      <Button onClick={() => handleDelete(teacher.id)} className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2">
+                      <Button 
+                        onClick={() => handleDeleteClick(teacher.id)} 
+                        className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2"
+                      >
                         Hapus
                       </Button>
                     </TableCell>
@@ -220,71 +267,84 @@ export default function Page() {
             </Table>
           </div>
           
-          {/* Tombol Cetak dan Tambah Guru diletakkan di bawah, berjejer */}
           <div className="flex gap-4 justify-end items-center mt-8">
             <Button
-              onClick={handlePrint} // Panggil fungsi untuk mencetak
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 no-print"
+              onClick={handlePrint}
+              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
             >
-              Cetak
+              Cetak PDF
             </Button>
             <Button
               onClick={handleTambah}
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4"
+              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
             >
               Tambah Guru
             </Button>
             <Link href={"/data"}>
-              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4">
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
                 KEMBALI
+              </Button>
+            </Link>
+            <Link href="/data/daftar-guru/sampah">
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
+                Sampah
               </Button>
             </Link>
           </div>
         </>
       )}
 
-      {/* Menambahkan CSS @media print langsung di dalam komponen */}
+      {/* Add Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus data guru ini? 
+              Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              onClick={() => setIsDeleteDialogOpen(false)}
+              variant="outline"
+              className="bg-gray-100 hover:bg-gray-200"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <style jsx global>{`
         @media print {
-          /* Menyembunyikan elemen-elemen yang tidak perlu dicetak */
-          .no-print {
+          .print-hide {
             display: none !important;
           }
-
-          /* Menyembunyikan tombol "Tambah Guru", "Cetak", dan "Kembali" pada saat pencetakan */
-          .flex {
-            display: none !important;
-          }
-
-          /* Menyembunyikan header bagian atas saat mencetak */
-          .bg-primary {
-            display: none !important;
-          }
-
-          /* Memperbaiki tampilan tabel saat dicetak */
           table {
             width: 100%;
             border-collapse: collapse;
             margin: 20px 0;
           }
-
           th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
           }
-
           th {
             background-color: #f2f2f2;
             font-weight: bold;
           }
-
-          /* Menambahkan margin dan padding untuk tabel */
           table {
             margin-top: 20px;
             padding: 10px;
           }
-
           h1 {
             font-size: 24px;
             text-align: center;

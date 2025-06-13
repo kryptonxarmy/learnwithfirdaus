@@ -53,6 +53,8 @@ model Child {
   progress   Progress[]
   attendance Attendance[]
   profilePhoto String?  
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime? 
 }
 
 model Teacher {
@@ -69,6 +71,8 @@ model Teacher {
   country    String
   attendance Attendance[]
   profilePhoto String?  
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
 }
 
 model Class {

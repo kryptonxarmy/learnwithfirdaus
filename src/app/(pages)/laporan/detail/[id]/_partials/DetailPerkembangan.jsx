@@ -50,9 +50,13 @@ export default function DetailPerkembangan() {
     try {
       const res = await fetch(`/api/admin/laporan/detailPerkembangan?childId=${id}`);
       const data = await res.json();
+      
+      // Debug response
+      console.log('Progress Details Response:', data);
+      
       if (data.success) {
-        const filteredProgressDetails = data.progressDetails.filter((detail) => detail.progress.childId === parseInt(id));
-        setProgressDetails(filteredProgressDetails);
+        // Ubah ini sesuai struktur response baru
+        setProgressDetails(data.progressDetails || []);
       } else {
         console.error("Failed to fetch progress details:", data.message);
       }

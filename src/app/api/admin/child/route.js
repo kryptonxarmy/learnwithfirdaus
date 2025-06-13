@@ -30,22 +30,22 @@ export async function POST(req) {
   }
 }
 
-export async function GET(req) {
+export async function GET() {
   try {
     const children = await prisma.child.findMany({
+      where: {
+        isDeleted: false // Hanya ambil data yang belum dihapus
+      },
       include: {
         parent: {
           include: {
-            user: {
-              select: {
-                name: true,
-              },
-            },
-          },
+            user: true
+          }
         },
-        class: true,
-      },
+        class: true
+      }
     });
+
     return NextResponse.json({ success: true, children });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });

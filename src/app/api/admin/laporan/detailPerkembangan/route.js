@@ -5,16 +5,58 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const childId = searchParams.get('childId');
+
+  if (!childId) {
+    return NextResponse.json({ 
+      success: false, 
+      message: 'childId is required' 
+    });
+  }
+
   try {
-    const progressDetails = await prisma.progressDetail.findMany({
-      include: {
-        subDetails: true,
-        progress: true,
+    // Get progress by childId
+    const progress = await prisma.progress.findFirst({
+      where: { 
+        childId: parseInt(childId) 
       },
     });
-    return NextResponse.json({ success: true, progressDetails });
+
+    if (!progress) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'No progress found',
+        progressDetails: [] 
+      });
+    }
+
+    // Get progressDetails with related data
+    const progressDetails = await prisma.progressDetail.findMany({
+      where: { 
+        progressId: progress.id 
+      },
+      include: {
+        subDetails: true,
+      },
+      orderBy: {
+        id: 'asc'
+      }
+    });
+
+    // Pastikan response menggunakan format yang konsisten
+    return NextResponse.json({
+      success: true,
+      progressDetails: progressDetails // Ubah nama property ini
+    });
+
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message });
+    console.error('Error:', error);
+    return NextResponse.json({ 
+      success: false, 
+      message: error.message,
+      progressDetails: [] 
+    });
   }
 }
 
