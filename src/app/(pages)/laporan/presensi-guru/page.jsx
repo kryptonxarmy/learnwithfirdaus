@@ -179,7 +179,7 @@ export default function Page() {
   };
 
   // PRINT ONLY TABLE
-    const handlePrint = () => {
+  const handlePrint = () => {
     const printContent = document.getElementById("print-area").innerHTML;
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -187,22 +187,18 @@ export default function Page() {
     iframe.style.height = "0px";
     iframe.style.border = "none";
     document.body.appendChild(iframe);
-  
+
     const doc = iframe.contentWindow.document;
     const currentDate = new Date().toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-  
+
     // Ganti dengan semester & tahun ajaran yang sesuai jika ada filter
-    const selectedSemesterName = selectedSemester
-      ? semesters.find((s) => s.id == selectedSemester)?.number || "Semua"
-      : "Semua";
-    const selectedAcademicYearName = selectedAcademicYear
-      ? academicYears.find((y) => y.id == selectedAcademicYear)?.year || "Semua"
-      : "Semua";
-  
+    const selectedSemesterName = selectedSemester ? semesters.find((s) => s.id == selectedSemester)?.number || "Semua" : "Semua";
+    const selectedAcademicYearName = selectedAcademicYear ? academicYears.find((y) => y.id == selectedAcademicYear)?.year || "Semua" : "Semua";
+
     doc.write(`
       <html>
         <head>
@@ -271,10 +267,9 @@ export default function Page() {
               <div class="logo-section">
                 <div class="logo-placeholder">TDF</div>
                 <div class="company-info">
-                  <h1>TPA DUTA FIRDAUS</h1>
-                  <p>Jl. Pendidikan No. 123, Bandung</p>
-                  <p>Telp: (021) 1234-5678 | Email: info@tpadutafirdaus.ac.id</p>
-                  <p>Website: www.learwithfirdaus.vercel.app</p>
+                 <h1>TPA DUTA FIRDAUS</h1>
+              <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+              <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
                 </div>
               </div>
               <div class="document-meta">
@@ -379,7 +374,7 @@ export default function Page() {
         </body>
       </html>
     `);
-  
+
     doc.close();
     iframe.contentWindow.print();
     document.body.removeChild(iframe);
@@ -411,7 +406,9 @@ export default function Page() {
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-4 print-hide" onClick={() => setIsDialogOpen(true)}>Tambah Presensi</Button>
+          <Button className="mb-4 print-hide" onClick={() => setIsDialogOpen(true)}>
+            Tambah Presensi
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -497,8 +494,12 @@ export default function Page() {
                   </span>
                 </TableCell>
                 <TableCell className="text-center print-hide">
-                  <Button className="mr-2" onClick={() => handleEdit(item)}>Edit</Button>
-                  <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>Delete</Button>
+                  <Button className="mr-2" onClick={() => handleEdit(item)}>
+                    Edit
+                  </Button>
+                  <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>
+                    Delete
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -506,10 +507,7 @@ export default function Page() {
         </Table>
       </div>
       <div className="w-full flex justify-end mt-8 print-hide gap-2">
-        <Button
-          onClick={handlePrint}
-          className="bg-primary px-4 rounded-lg text-white font-semibold"
-        >
+        <Button onClick={handlePrint} className="bg-primary px-4 rounded-lg text-white font-semibold">
           Cetak PDF
         </Button>
         <Link href={"/laporan"}>

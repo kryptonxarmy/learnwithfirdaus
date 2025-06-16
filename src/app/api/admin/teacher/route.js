@@ -4,8 +4,23 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
+// /api/admin/teacher/route.js
 export async function POST(req) {
-  const { name, email, phone, nip, birthDate, gender, address, city, postalCode, country, profilePhoto } = await req.json();
+  const { 
+    name, 
+    email, 
+    phone, 
+    nip, 
+    birthDate, 
+    gender, 
+    address, 
+    city, 
+    postalCode, 
+    country, 
+    profilePhoto,
+    academicYear,  // ID tahun ajaran
+    semester       // ID semester
+  } = await req.json();
 
   try {
     const teacher = await prisma.teacher.create({
@@ -20,7 +35,10 @@ export async function POST(req) {
         city,
         postalCode,
         country,
-        profilePhoto, // Add this line
+        profilePhoto,
+        // Relasi dengan semester dan tahun ajaran
+        semesterId: semester ? parseInt(semester) : null,
+        academicYearId: academicYear ? parseInt(academicYear) : null,
       },
     });
     return NextResponse.json({ success: true, teacher });
@@ -29,47 +47,59 @@ export async function POST(req) {
   }
 }
 
-export async function GET() {
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const semesterId = searchParams.get("semesterId");
+  const academicYearId = searchParams.get("academicYearId");
+
   try {
+    const whereClause = {
+      isDeleted: false,
+      ...(semesterId && { semesterId: parseInt(semesterId) }),
+      ...(academicYearId && { academicYearId: parseInt(academicYearId) })
+    };
+
     const teachers = await prisma.teacher.findMany({
-      where: {
-        isDeleted: false
+      where: whereClause,
+      include: {
+        semester: {
+          include: {
+            academicYear: true
+          }
+        }
       },
       orderBy: {
-        id: 'asc'
+        name: 'asc'
       }
     });
 
-    if (!teachers) {
-      return NextResponse.json({ 
-        success: false, 
-        message: "No teachers found",
-        teachers: [] 
-      });
-    }
-
-    return NextResponse.json({ 
-      success: true, 
-      teachers: teachers 
-    });
-
+    return NextResponse.json({ success: true, teachers });
   } catch (error) {
-    console.error("Database error:", error);
-    return NextResponse.json({ 
-      success: false, 
-      message: error.message || "Failed to fetch teachers",
-      teachers: [] 
-    }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    return NextResponse.json({ success: false, error: error.message });
   }
 }
 
+// /api/admin/teacher/route.js
 export async function PUT(req) {
-  const { id, name, email, phone, nip, birthDate, gender, address, city, postalCode, country, profilePhoto } = await req.json();
+  const { 
+    id,
+    name, 
+    email, 
+    phone, 
+    nip, 
+    birthDate, 
+    gender, 
+    address, 
+    city, 
+    postalCode, 
+    country, 
+    profilePhoto,
+    academicYear,  // ID tahun ajaran
+    semester       // ID semester
+  } = await req.json();
 
   try {
-    const updatedTeacher = await prisma.teacher.update({
+    const teacher = await prisma.teacher.update({
       where: { id: parseInt(id) },
       data: {
         name,
@@ -82,10 +112,13 @@ export async function PUT(req) {
         city,
         postalCode,
         country,
-        profilePhoto, // Add this line
+        profilePhoto,
+        // Update relasi dengan semester dan tahun ajaran
+        semesterId: semester ? parseInt(semester) : null,
+        academicYearId: academicYear ? parseInt(academicYear) : null,
       },
     });
-    return NextResponse.json({ success: true, teacher: updatedTeacher });
+    return NextResponse.json({ success: true, teacher });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });
   }

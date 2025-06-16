@@ -573,9 +573,8 @@ export default function Page() {
             <div class="logo-placeholder">TDF</div>
             <div class="company-info">
               <h1>TPA DUTA FIRDAUS</h1>
-              <p>Jl. Pendidikan No. 123, Bandung</p>
-              <p>Telp: (021) 1234-5678 | Email: info@tpadutafirdaus.ac.id</p>
-              <p>Website: www.learwithfirdaus.vercel.app</p>
+              <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+              <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
             </div>
           </div>
           <div class="document-meta">

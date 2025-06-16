@@ -55,6 +55,12 @@ model Child {
   profilePhoto String?  
   isDeleted  Boolean   @default(false)
   deletedAt  DateTime? 
+
+   // Tambahan untuk filter
+  semesterId     Int?
+  semester       Semester?     @relation(fields: [semesterId], references: [id])
+  academicYearId Int?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
 }
 
 model Teacher {
@@ -73,6 +79,12 @@ model Teacher {
   profilePhoto String?  
   isDeleted  Boolean   @default(false)
   deletedAt  DateTime?
+  
+  // Tambahan untuk filter
+  semesterId     Int?
+  semester       Semester?     @relation(fields: [semesterId], references: [id])
+  academicYearId Int?
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id])
 }
 
 model Class {
@@ -192,6 +204,8 @@ model AcademicYear {
   Attendance Attendance[]
   Progress   Progress[]
   Document   Document[]
+  teachers   Teacher[]    // Tambahan
+  child      Child[]
 }
 
 model Semester {
@@ -205,6 +219,8 @@ model Semester {
   attendances     Attendance[]
   progresses      Progress[]
   documents       Document[]
+  teachers        Teacher[]        // Tambahan
+  child           Child[]
 }
 
 model LearningModule {

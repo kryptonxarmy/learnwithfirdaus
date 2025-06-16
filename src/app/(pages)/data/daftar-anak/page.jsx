@@ -74,24 +74,24 @@ export default function Page() {
     }
   };
 
- // Fungsi untuk mencetak hanya tabel dengan iframe
-const handlePrint = () => {
-  const printContent = document.getElementById("print-area").innerHTML;
-  const iframe = document.createElement('iframe');
-  iframe.style.position = 'absolute';
-  iframe.style.width = '0px';
-  iframe.style.height = '0px';
-  iframe.style.border = 'none';
-  document.body.appendChild(iframe);
+  // Fungsi untuk mencetak hanya tabel dengan iframe
+  const handlePrint = () => {
+    const printContent = document.getElementById("print-area").innerHTML;
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0px";
+    iframe.style.height = "0px";
+    iframe.style.border = "none";
+    document.body.appendChild(iframe);
 
-  const doc = iframe.contentWindow.document;
-  const currentDate = new Date().toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+    const doc = iframe.contentWindow.document;
+    const currentDate = new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
-  doc.write(`
+    doc.write(`
     <html>
       <head>
         <title>Daftar Anak - TPA Firdaus</title>
@@ -398,14 +398,13 @@ const handlePrint = () => {
             <div class="logo-section">
               
               <div class="company-info">
-                <h1>TPA FIRDAUS</h1>
-                <p>Jl. Pendidikan No. 123, Bandung</p>
-                <p>Telp: (021) 1234-5678 | Email: info@tpafirdaus.ac.id</p>
-                <p>Website: www.learwithfirdaus.vercel.app</p>
+                <h1>TPA DUTA FIRDAUS</h1>
+              <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+              <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
               </div>
             </div>
             <div class="document-meta">
-              <div class="doc-number">DOC/TPAFIRDAUS/ANAK/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getDate()).padStart(2, '0')}</div>
+              <div class="doc-number">DOC/TPAFIRDAUS/ANAK/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")}</div>
               <div>Tanggal Cetak: ${currentDate}</div>
               <div>Halaman 1 dari 1</div>
             </div>
@@ -432,16 +431,20 @@ const handlePrint = () => {
               </tr>
             </thead>
             <tbody>
-              ${children.map((child, index) => `
+              ${children
+                .map(
+                  (child, index) => `
                 <tr>
                   <td>${index + 1}</td>
                   <td style="text-align: left; padding-left: 12px;">${child.name}</td>
                   <td style="text-align: left; padding-left: 12px;">${child.parent.user.name}</td>
                   <td>${child.studentId}</td>
-                  <td>${new Date(child.birthDate).toLocaleDateString('id-ID')}</td>
+                  <td>${new Date(child.birthDate).toLocaleDateString("id-ID")}</td>
                   <td>${child.class.name}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join("")}
             </tbody>
           </table>
         </div>
@@ -470,10 +473,10 @@ const handlePrint = () => {
     </html>
   `);
 
-  doc.close();
-  iframe.contentWindow.print();
-  document.body.removeChild(iframe);
-};
+    doc.close();
+    iframe.contentWindow.print();
+    document.body.removeChild(iframe);
+  };
 
   return (
     <div className="flex flex-col gap-8 p-4">
@@ -539,16 +542,10 @@ const handlePrint = () => {
                     <TableCell>{new Date(child.birthDate).toLocaleDateString()}</TableCell>
                     <TableCell>{child.class.name}</TableCell>
                     <TableCell className="print-hide">
-                      <Button 
-                        onClick={() => handleEdit(child)} 
-                        className="bg-primary text-white font-semibold rounded-xl px-4"
-                      >
+                      <Button onClick={() => handleEdit(child)} className="bg-primary text-white font-semibold rounded-xl px-4">
                         Edit
                       </Button>
-                      <Button 
-                        onClick={() => handleDeleteClick(child.id)} 
-                        className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2"
-                      >
+                      <Button onClick={() => handleDeleteClick(child.id)} className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2">
                         Hapus
                       </Button>
                     </TableCell>
@@ -557,30 +554,20 @@ const handlePrint = () => {
               </TableBody>
             </Table>
           </div>
-          
+
           <div className="flex gap-4 justify-end items-center mt-8">
-            <Button
-              onClick={handlePrint}
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
-            >
+            <Button onClick={handlePrint} className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
               Cetak PDF
             </Button>
-            <Button
-              onClick={handleTambah}
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
-            >
+            <Button onClick={handleTambah} className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
               Tambah Anak
             </Button>
             <Link href={"/data"}>
-              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
-                KEMBALI
-              </Button>
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">KEMBALI</Button>
             </Link>
             {/* Tambahkan di navbar atau sidebar */}
             <Link href="/data/daftar-anak/sampah">
-              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
-                Sampah
-              </Button>
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">Sampah</Button>
             </Link>
           </div>
         </>
@@ -591,23 +578,13 @@ const handlePrint = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Konfirmasi Hapus</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus data anak ini? 
-              Tindakan ini tidak dapat dibatalkan.
-            </DialogDescription>
+            <DialogDescription>Apakah Anda yakin ingin menghapus data anak ini? Tindakan ini tidak dapat dibatalkan.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2">
-            <Button
-              onClick={() => setIsDeleteDialogOpen(false)}
-              variant="outline"
-              className="bg-gray-100 hover:bg-gray-200"
-            >
+            <Button onClick={() => setIsDeleteDialogOpen(false)} variant="outline" className="bg-gray-100 hover:bg-gray-200">
               Batal
             </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
+            <Button onClick={handleConfirmDelete} className="bg-red-500 hover:bg-red-600 text-white">
               Hapus
             </Button>
           </DialogFooter>
@@ -624,7 +601,8 @@ const handlePrint = () => {
             border-collapse: collapse;
             margin: 20px 0;
           }
-          th, td {
+          th,
+          td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;

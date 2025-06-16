@@ -15,17 +15,30 @@ export default function Page() {
   const [isEditGuru, setIsEditGuru] = useState(false);
   const [editData, setEditData] = useState(null);
   const [teachers, setTeachers] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [academicYears, setAcademicYears] = useState([]);
+  const [selectedSemester, setSelectedSemester] = useState("");
+  const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
   // Add new states for delete dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteTeacherId, setDeleteTeacherId] = useState(null);
 
   useEffect(() => {
+    fetch("/api/semester")
+      .then((res) => res.json())
+      .then((data) => setSemesters(data.semesters));
+    fetch("/api/academicYear")
+      .then((res) => res.json())
+      .then((data) => setAcademicYears(data.academicYears));
     fetchTeachers();
   }, []);
 
   const fetchTeachers = async () => {
+    const params = new URLSearchParams();
+    if (selectedSemester) params.append("semesterId", selectedSemester);
+    if (selectedAcademicYear) params.append("academicYearId", selectedAcademicYear);
     try {
-      const res = await fetch("/api/admin/teacher", {
+      const res = await fetch(`/api/admin/teacher?${params.toString()}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -37,7 +50,7 @@ export default function Page() {
       }
 
       const data = await res.json();
-      
+
       if (data.success) {
         setTeachers(data.teachers);
         setJumlahGuru(data.teachers.length);
@@ -85,7 +98,7 @@ export default function Page() {
       });
 
       const data = await res.json();
-      
+
       if (data.success) {
         fetchTeachers(); // Refresh data
         setIsDeleteDialogOpen(false);
@@ -104,20 +117,20 @@ export default function Page() {
   // Fungsi untuk mencetak hanya tabel dengan iframe
   const handlePrint = () => {
     const printContent = document.getElementById("print-area").innerHTML;
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.width = '0px';
-    iframe.style.height = '0px';
-    iframe.style.border = 'none';
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.width = "0px";
+    iframe.style.height = "0px";
+    iframe.style.border = "none";
     document.body.appendChild(iframe);
-  
+
     const doc = iframe.contentWindow.document;
-    const currentDate = new Date().toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    const currentDate = new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
-  
+
     doc.write(`
       <html>
         <head>
@@ -425,14 +438,13 @@ export default function Page() {
               <div class="logo-section">
                
                 <div class="company-info">
-                  <h1>TPA FIRDAUS</h1>
-                  <p>Jl. Pendidikan No. 123, Bandung</p>
-                  <p>Telp: (021) 1234-5678 | Email: info@tpafirdaus.ac.id</p>
-                  <p>Website: www.learwithfirdaus.vercel.app</p>
+                  <h1>TPA DUTA FIRDAUS</h1>
+              <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+              <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
                 </div>
               </div>
               <div class="document-meta">
-                <div class="doc-number">DOC/TPAFIRDAUS/GURU/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getDate()).padStart(2, '0')}</div>
+                <div class="doc-number">DOC/TPAFIRDAUS/GURU/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")}</div>
                 <div>Tanggal Cetak: ${currentDate}</div>
                 <div>Halaman 1 dari 1</div>
               </div>
@@ -441,7 +453,7 @@ export default function Page() {
   
           <div class="document-title">
             <h2>Daftar Guru Aktif</h2>
-            <div class="subtitle">Tahun Ajaran 2024/2025 - Semester Ganjil</div>
+            <div class="subtitle">Tahun Ajaran ${selectedAcademicYear ? academicYears.find((y) => y.id === parseInt(selectedAcademicYear))?.year : "Semua Tahun Ajar"} - Semester ${(selectedSemester == "1" ? "Ganjil" : "Genap") || "Semua Semester"}</div>
           </div>
   
           
@@ -459,16 +471,20 @@ export default function Page() {
                 </tr>
               </thead>
               <tbody>
-                ${teachers.map((teacher, index) => `
+                ${teachers
+                  .map(
+                    (teacher, index) => `
                   <tr>
                     <td>${index + 1}</td>
                     <td style="text-align: left; padding-left: 12px;">${teacher.name}</td>
                     <td>${teacher.email}</td>
                     <td>${teacher.phone}</td>
-                    <td>${teacher.nip || '-'}</td>
+                    <td>${teacher.nip || "-"}</td>
                     <td>${formatDate(teacher.birthDate)}</td>
                   </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
               </tbody>
             </table>
           </div>
@@ -498,7 +514,7 @@ export default function Page() {
         </body>
       </html>
     `);
-  
+
     doc.close();
     iframe.contentWindow.print();
     document.body.removeChild(iframe);
@@ -529,7 +545,7 @@ export default function Page() {
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-gray-300">Semester</p>
-            <p className="font-bold text-lg">1</p>
+            <p className="font-bold text-lg">{selectedSemester || "Semua Semester"}</p>
           </div>
         </div>
         <div className="flex gap-4 items-center">
@@ -538,13 +554,34 @@ export default function Page() {
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-gray-300">Tahun Ajar</p>
-            <p className="font-bold text-lg">2024</p>
+            <p className="font-bold text-lg">{selectedAcademicYear ? academicYears.find((y) => y.id === parseInt(selectedAcademicYear))?.year : "Semua Tahun Ajar"}</p>
           </div>
         </div>
       </div>
+      {console.log(academicYears)}
+
+      <div className="flex gap-4 mb-4">
+        <select value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)}>
+          <option value="">Semua Tahun Ajaran</option>
+          {academicYears.map((y) => (
+            <option key={y.id} value={y.id}>
+              {y.year}
+            </option>
+          ))}
+        </select>
+        <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
+          <option value="">Semua Semester</option>
+          {semesters.map((s) => (
+            <option key={s.id} value={s.id}>
+              Semester {s.number}
+            </option>
+          ))}
+        </select>
+        <Button onClick={fetchTeachers}>Filter</Button>
+      </div>
 
       {isTambahGuru || isEditGuru ? (
-        <FormGuru status={isEditGuru ? "edit" : "tambah"} data={editData} onKembali={handleKembali} fetchTeachers={fetchTeachers} />
+        <FormGuru status={isEditGuru ? "edit" : "tambah"} data={editData} selectedAcademicYear={selectedAcademicYear} selectedSemester={selectedSemester} onKembali={handleKembali} fetchTeachers={fetchTeachers} />
       ) : (
         <>
           <div id="print-area">
@@ -571,10 +608,7 @@ export default function Page() {
                       <Button onClick={() => handleEdit(teacher)} className="bg-primary text-white font-semibold rounded-xl px-4">
                         Edit
                       </Button>
-                      <Button 
-                        onClick={() => handleDeleteClick(teacher.id)} 
-                        className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2"
-                      >
+                      <Button onClick={() => handleDeleteClick(teacher.id)} className="bg-red-500 text-white font-semibold rounded-xl px-4 ml-2">
                         Hapus
                       </Button>
                     </TableCell>
@@ -583,29 +617,19 @@ export default function Page() {
               </TableBody>
             </Table>
           </div>
-          
+
           <div className="flex gap-4 justify-end items-center mt-8">
-            <Button
-              onClick={handlePrint}
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
-            >
+            <Button onClick={handlePrint} className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
               Cetak PDF
             </Button>
-            <Button
-              onClick={handleTambah}
-              className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide"
-            >
+            <Button onClick={handleTambah} className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
               Tambah Guru
             </Button>
             <Link href={"/data"}>
-              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
-                KEMBALI
-              </Button>
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">KEMBALI</Button>
             </Link>
             <Link href="/data/daftar-guru/sampah">
-              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">
-                Sampah
-              </Button>
+              <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4 print-hide">Sampah</Button>
             </Link>
           </div>
         </>
@@ -616,23 +640,13 @@ export default function Page() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Konfirmasi Hapus</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus data guru ini? 
-              Tindakan ini tidak dapat dibatalkan.
-            </DialogDescription>
+            <DialogDescription>Apakah Anda yakin ingin menghapus data guru ini? Tindakan ini tidak dapat dibatalkan.</DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex gap-2">
-            <Button
-              onClick={() => setIsDeleteDialogOpen(false)}
-              variant="outline"
-              className="bg-gray-100 hover:bg-gray-200"
-            >
+            <Button onClick={() => setIsDeleteDialogOpen(false)} variant="outline" className="bg-gray-100 hover:bg-gray-200">
               Batal
             </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              className="bg-red-500 hover:bg-red-600 text-white"
-            >
+            <Button onClick={handleConfirmDelete} className="bg-red-500 hover:bg-red-600 text-white">
               Hapus
             </Button>
           </DialogFooter>
@@ -649,7 +663,8 @@ export default function Page() {
             border-collapse: collapse;
             margin: 20px 0;
           }
-          th, td {
+          th,
+          td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;

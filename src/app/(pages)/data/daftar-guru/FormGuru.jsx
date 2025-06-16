@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CldUploadWidget } from "next-cloudinary";
 
-export default function FormGuru({ status, data, onKembali, fetchTeachers }) {
+export default function FormGuru({ status, data, onKembali, fetchTeachers, selectedAcademicYear, selectedSemester }) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,6 +41,8 @@ export default function FormGuru({ status, data, onKembali, fetchTeachers }) {
     try {
       const payload = {
         ...formData,
+        academicYear: selectedAcademicYear, // Gunakan selectedAcademicYear dari props
+        semester: selectedSemester, // Gunakan selectedSemester dari props
       };
 
       const method = status === "edit" ? "PUT" : "POST";
@@ -68,6 +70,11 @@ export default function FormGuru({ status, data, onKembali, fetchTeachers }) {
       <div className="mb-4 border-b-2 border-primary w-fit">
         <h1 className="text-xl font-bold text-primary">Profile</h1>
       </div>
+      <div className="bg-blue-50 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2">Filter Aktif:</h3>
+            <p>Tahun Ajaran: {selectedAcademicYear ? "Dipilih" : "Belum dipilih"}</p>
+            <p>Semester: {selectedSemester ? "Dipilih" : "Belum dipilih"}</p>
+          </div>
       <div className="flex gap-4 justify-around">
         <div className="size-36 overflow-hidden rounded-full border-2 border-primary">
           <img
@@ -85,6 +92,8 @@ export default function FormGuru({ status, data, onKembali, fetchTeachers }) {
               </Button>
             )}
           </CldUploadWidget>
+
+          
           <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Nama Guru" className="border border-gray-300 rounded-md p-2" />
           <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="border border-gray-300 rounded-md p-2" />
           <input type="text" name="phone" value={formData.phone} onChange={handleChange} placeholder="No Telp" className="border border-gray-300 rounded-md p-2" />
