@@ -110,78 +110,395 @@ export default function Page() {
     iframe.style.height = '0px';
     iframe.style.border = 'none';
     document.body.appendChild(iframe);
-
+  
     const doc = iframe.contentWindow.document;
-
+    const currentDate = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  
     doc.write(`
       <html>
         <head>
-          <title>Daftar Guru</title>
+          <title>Daftar Guru - TPA Firdaus</title>
+          <meta charset="UTF-8">
           <style>
             @page {
-              margin: 40px;
+              margin: 2cm 1.5cm;
+              size: A4;
+            }
+            
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
             }
             
             body { 
-              font-family: Times New Roman, serif;
-              color: #000;
-              line-height: 1.5;
-              margin: 0;
-              padding: 0;
+              font-family: 'Times New Roman', serif;
+              font-size: 12px;
+              line-height: 1.4;
+              color: #2c2c2c;
+              background: white;
             }
-
-            .header {
-              text-align: center;
-              margin-bottom: 20px;
-              border-bottom: 2px solid #000;
-              padding-bottom: 15px;
+  
+            /* Header Section */
+            .document-header {
+              border-bottom: 3px solid #1e40af;
+              padding-bottom: 20px;
+              margin-bottom: 30px;
+              position: relative;
             }
-
-            .header h1 {
-              font-size: 24px;
+  
+            .header-top {
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 15px;
+            }
+  
+            .logo-section {
+              display: flex;
+              align-items: center;
+            }
+  
+            .logo-placeholder {
+              width: 60px;
+              height: 60px;
+              background: linear-gradient(135deg, #1e40af, #3b82f6);
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
               font-weight: bold;
-              margin-bottom: 10px;
+              font-size: 24px;
+              margin-right: 15px;
             }
-
-            .header p {
-              font-size: 16px;
-              margin: 0;
+  
+            .company-info h1 {
+              font-size: 24px;
+              font-weight: 700;
+              color: #1e40af;
+              margin-bottom: 3px;
+              letter-spacing: 0.5px;
             }
-
+  
+            .company-info p {
+              font-size: 11px;
+              color: #64748b;
+              margin-bottom: 2px;
+            }
+  
+            .document-meta {
+              text-align: right;
+              font-size: 10px;
+              color: #64748b;
+            }
+  
+            .document-meta .doc-number {
+              font-weight: 600;
+              color: #1e40af;
+              font-size: 11px;
+            }
+  
+            /* Title Section */
+            .document-title {
+              text-align: center;
+              margin-bottom: 25px;
+              padding: 15px 0;
+              background: linear-gradient(90deg, #f8fafc, #e2e8f0, #f8fafc);
+              border-radius: 6px;
+            }
+  
+            .document-title h2 {
+              font-size: 20px;
+              font-weight: 700;
+              color: #1e293b;
+              margin-bottom: 5px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+            }
+  
+            .document-title .subtitle {
+              font-size: 12px;
+              color: #64748b;
+              font-style: italic;
+            }
+  
+            /* Info Section */
+            .info-section {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 25px;
+              padding: 15px;
+              background: #f8fafc;
+              border-left: 4px solid #1e40af;
+              border-radius: 0 6px 6px 0;
+            }
+  
+            .info-item {
+              text-align: center;
+            }
+  
+            .info-item .label {
+              font-size: 10px;
+              color: #64748b;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 3px;
+            }
+  
+            .info-item .value {
+              font-size: 14px;
+              font-weight: 600;
+              color: #1e293b;
+            }
+  
+            /* Table Styles */
+            .table-container {
+              margin-bottom: 30px;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+              border-radius: 8px;
+              overflow: hidden;
+            }
+  
             table {
               width: 100%;
               border-collapse: collapse;
-              margin: 15px 0;
-              page-break-inside: avoid;
+              font-size: 11px;
             }
-
-            th, td {
-              border: 1px solid #ddd;
-              padding: 8px;
-              text-align: left;
-              font-size: 14px;
+  
+            thead {
+              background: linear-gradient(135deg, #1e40af, #3b82f6);
+              color: white;
             }
-
+  
             th {
-              background-color: #f5f5f5;
-              font-weight: bold;
+              padding: 12px 8px;
+              text-align: center;
+              font-weight: 600;
+              text-transform: uppercase;
+              letter-spacing: 0.3px;
+              font-size: 10px;
+              border-right: 1px solid rgba(255,255,255,0.2);
             }
-
-            .print-hide {
-              display: none !important;
+  
+            th:last-child {
+              border-right: none;
+            }
+  
+            tbody tr {
+              border-bottom: 1px solid #e2e8f0;
+            }
+  
+            tbody tr:nth-child(even) {
+              background-color: #f8fafc;
+            }
+  
+            tbody tr:hover {
+              background-color: #e2e8f0;
+            }
+  
+            td {
+              padding: 10px 8px;
+              text-align: center;
+              vertical-align: middle;
+              border-right: 1px solid #e2e8f0;
+            }
+  
+            td:last-child {
+              border-right: none;
+            }
+  
+            td:first-child {
+              font-weight: 600;
+              color: #1e293b;
+            }
+  
+            /* Summary Section */
+            .summary-section {
+              margin-top: 25px;
+              padding: 15px;
+              background: #f8fafc;
+              border-radius: 6px;
+              border: 1px solid #e2e8f0;
+            }
+  
+            .summary-title {
+              font-size: 12px;
+              font-weight: 600;
+              color: #1e293b;
+              margin-bottom: 8px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+  
+            .summary-content {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            }
+  
+            .total-count {
+              font-size: 14px;
+              font-weight: 700;
+              color: #1e40af;
+            }
+  
+            /* Footer */
+            .document-footer {
+              margin-top: 40px;
+              padding-top: 20px;
+              border-top: 2px solid #e2e8f0;
+              display: flex;
+              justify-content: space-between;
+              align-items: end;
+            }
+  
+            .footer-left {
+              font-size: 10px;
+              color: #64748b;
+            }
+  
+            .signature-section {
+              text-align: center;
+              min-width: 200px;
+            }
+  
+            .signature-title {
+              font-size: 11px;
+              color: #1e293b;
+              margin-bottom: 50px;
+              font-weight: 600;
+            }
+  
+            .signature-line {
+              border-bottom: 1px solid #1e293b;
+              margin-bottom: 5px;
+              height: 1px;
+            }
+  
+            .signature-name {
+              font-size: 11px;
+              color: #1e293b;
+              font-weight: 600;
+            }
+  
+            .signature-title-below {
+              font-size: 10px;
+              color: #64748b;
+            }
+  
+            /* Print specific */
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+              }
+              
+              .page-break {
+                page-break-before: always;
+              }
+            }
+  
+            /* Watermark */
+            .watermark {
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-45deg);
+              font-size: 120px;
+              color: rgba(30, 64, 175, 0.03);
+              font-weight: 900;
+              z-index: -1;
+              pointer-events: none;
             }
           </style>
         </head>
         <body>
-          <div class="header">
-            <h1>DAFTAR GURU</h1>
-            <p>LearnWithFirdaus</p>
+          <div class="watermark">TPA FIRDAUS</div>
+          
+          <div class="document-header">
+            <div class="header-top">
+              <div class="logo-section">
+               
+                <div class="company-info">
+                  <h1>TPA FIRDAUS</h1>
+                  <p>Jl. Pendidikan No. 123, Bandung</p>
+                  <p>Telp: (021) 1234-5678 | Email: info@tpafirdaus.ac.id</p>
+                  <p>Website: www.learwithfirdaus.vercel.app</p>
+                </div>
+              </div>
+              <div class="document-meta">
+                <div class="doc-number">DOC/TPAFIRDAUS/GURU/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, '0')}/${String(new Date().getDate()).padStart(2, '0')}</div>
+                <div>Tanggal Cetak: ${currentDate}</div>
+                <div>Halaman 1 dari 1</div>
+              </div>
+            </div>
           </div>
-          ${printContent}
+  
+          <div class="document-title">
+            <h2>Daftar Guru Aktif</h2>
+            <div class="subtitle">Tahun Ajaran 2024/2025 - Semester Ganjil</div>
+          </div>
+  
+          
+  
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 5%;">No</th>
+                  <th style="width: 25%;">Nama Lengkap</th>
+                  <th style="width: 25%;">Email</th>
+                  <th style="width: 15%;">No. Telepon</th>
+                  <th style="width: 15%;">NIP</th>
+                  <th style="width: 15%;">Tanggal Lahir</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${teachers.map((teacher, index) => `
+                  <tr>
+                    <td>${index + 1}</td>
+                    <td style="text-align: left; padding-left: 12px;">${teacher.name}</td>
+                    <td>${teacher.email}</td>
+                    <td>${teacher.phone}</td>
+                    <td>${teacher.nip || '-'}</td>
+                    <td>${formatDate(teacher.birthDate)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+  
+          <div class="summary-section">
+            <div class="summary-title">Ringkasan</div>
+            <div class="summary-content">
+              <div>
+                <strong>Total Guru Aktif:</strong> <span class="total-count">${teachers.length} Orang</span>
+              </div>
+              <div style="font-size: 10px; color: #64748b;">
+                Data per ${currentDate}
+              </div>
+            </div>
+          </div>
+  
+          <div class="document-footer">
+            <div class="footer-left">
+              <div><strong>TPA Firdaus</strong></div>
+              <div>Dokumen ini digenerate secara otomatis oleh sistem</div>
+              <div>© ${new Date().getFullYear()} TPA Firdaus. All rights reserved.</div>
+            </div>
+            <div class="signature-section">
+             
+            </div>
+          </div>
         </body>
       </html>
     `);
-
+  
     doc.close();
     iframe.contentWindow.print();
     document.body.removeChild(iframe);
