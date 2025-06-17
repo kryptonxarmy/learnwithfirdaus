@@ -1,75 +1,84 @@
-// /pages/api/progressDetail/index.js
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+// /src/app/admin/laporan/detailPerkembangan/route.js
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
+  const progressId = searchParams.get('progressId');
   const childId = searchParams.get('childId');
 
-  if (!childId) {
-    return NextResponse.json({ 
-      success: false, 
-      message: 'childId is required' 
-    });
-  }
-
   try {
-    // Get progress by childId
-    const progress = await prisma.progress.findFirst({
-      where: { 
-        childId: parseInt(childId) 
-      },
-    });
+    let progressDetails = [];
+    
+    if (childId) {
+      // Fetch latest progress for the child
+      const progress = await prisma.progress.findFirst({
+        where: { 
+          childId: parseInt(childId),
+          isDeleted: false
+        },
+        orderBy: {
+          date: 'desc' // Use date instead of createdAt
+        }
+      });
 
-    if (!progress) {
-      return NextResponse.json({ 
-        success: false, 
-        message: 'No progress found',
-        progressDetails: [] 
+      if (progress) {
+        // Fetch progress details if progress exists
+        progressDetails = await prisma.progressDetail.findMany({
+          where: {
+            progressId: progress.id,
+            isDeleted: false
+          },
+          include: {
+            subDetails: true
+          },
+          orderBy: {
+            id: 'asc'
+          }
+        });
+      }
+    } else if (progressId) {
+      // Direct fetch by progressId
+      progressDetails = await prisma.progressDetail.findMany({
+        where: {
+          progressId: parseInt(progressId),
+          isDeleted: false
+        },
+        include: {
+          subDetails: true
+        },
+        orderBy: {
+          id: 'asc'
+        }
       });
     }
 
-    // Get progressDetails with related data
-    const progressDetails = await prisma.progressDetail.findMany({
-      where: { 
-        progressId: progress.id 
-      },
-      include: {
-        subDetails: true,
-      },
-      orderBy: {
-        id: 'asc'
-      }
+    return NextResponse.json({ 
+      success: true, 
+      progressDetails 
     });
-
-    // Pastikan response menggunakan format yang konsisten
-    return NextResponse.json({
-      success: true,
-      progressDetails: progressDetails // Ubah nama property ini
-    });
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error fetching progress details:", error);
     return NextResponse.json({ 
       success: false, 
-      message: error.message,
-      progressDetails: [] 
-    });
+      error: error.message 
+    }, { status: 500 });
   }
 }
 
 export async function POST(req) {
   const { category, progressId, subDetails } = await req.json();
+  console.log("POST API - Received Payload:", { category, progressId, subDetails }); // Tambahkan ini
 
   try {
-    // Check if the progressId exists
     const progress = await prisma.progress.findUnique({
       where: { id: parseInt(progressId) },
     });
 
     if (!progress) {
+      console.error("POST API - Progress ID does not exist:", progressId); // Tambahkan ini
       return NextResponse.json({ success: false, error: "Progress ID does not exist" });
     }
 
@@ -85,8 +94,10 @@ export async function POST(req) {
         },
       },
     });
+    console.log("POST API - Created ProgressDetail:", progressDetail); // Tambahkan ini
     return NextResponse.json({ success: true, progressDetail });
   } catch (error) {
+    console.error("Error in POST API:", error); // Ubah pesan error
     return NextResponse.json({ success: false, error: error.message });
   }
 }
