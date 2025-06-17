@@ -16,7 +16,7 @@ model User {
   role             Role
   admin            Admin?
   parent           Parent?
-  profilePhoto String?  
+  profilePhoto     String?
   sentMessages     Message[] @relation("Sender")
   receivedMessages Message[] @relation("Receiver")
 }
@@ -28,35 +28,35 @@ model Admin {
 }
 
 model Parent {
-  id       Int       @id @default(autoincrement())
-  userId   Int       @unique
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       Int        @id @default(autoincrement())
+  userId   Int        @unique
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   child    Child[]
   feedback Feedback[]
 }
 
 model Child {
-  id         Int          @id @default(autoincrement())
-  name       String
-  studentId  String       @unique
-  phone      String
-  birthDate  DateTime
-  gender     String
-  address    String
-  city       String
-  postalCode String
-  country    String
-  parentId   Int
-  parent     Parent       @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  classId    Int
-  class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  progress   Progress[]
-  attendance Attendance[]
-  profilePhoto String?  
-  isDeleted  Boolean   @default(false)
-  deletedAt  DateTime? 
+  id           Int          @id @default(autoincrement())
+  name         String
+  studentId    String       @unique
+  phone        String
+  birthDate    DateTime
+  gender       String
+  address      String
+  city         String
+  postalCode   String
+  country      String
+  parentId     Int
+  parent       Parent       @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  classId      Int
+  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  progress     Progress[]
+  attendance   Attendance[]
+  profilePhoto String?
+  isDeleted    Boolean      @default(false)
+  deletedAt    DateTime?
 
-   // Tambahan untuk filter
+  // Tambahan untuk filter
   semesterId     Int?
   semester       Semester?     @relation(fields: [semesterId], references: [id])
   academicYearId Int?
@@ -64,22 +64,22 @@ model Child {
 }
 
 model Teacher {
-  id         Int          @id @default(autoincrement())
-  name       String
-  email      String       @unique
-  phone      String
-  nip        String?
-  birthDate  DateTime
-  gender     String
-  address    String
-  city       String
-  postalCode String
-  country    String
-  attendance Attendance[]
-  profilePhoto String?  
-  isDeleted  Boolean   @default(false)
-  deletedAt  DateTime?
-  
+  id           Int          @id @default(autoincrement())
+  name         String
+  email        String       @unique
+  phone        String
+  nip          String?
+  birthDate    DateTime
+  gender       String
+  address      String
+  city         String
+  postalCode   String
+  country      String
+  attendance   Attendance[]
+  profilePhoto String?
+  isDeleted    Boolean      @default(false)
+  deletedAt    DateTime?
+
   // Tambahan untuk filter
   semesterId     Int?
   semester       Semester?     @relation(fields: [semesterId], references: [id])
@@ -99,9 +99,9 @@ model Class {
 }
 
 model Kegiatan {
-  id               Int            @id @default(autoincrement())
-  title            String
-  image            String
+  id    Int    @id @default(autoincrement())
+  title String
+  image String
 }
 
 model CoreActivity {
@@ -118,23 +118,27 @@ model CoreActivity {
 }
 
 model Attendance {
-  id             Int          @id @default(autoincrement())
+  id             Int       @id @default(autoincrement())
   date           DateTime
-  type           String // "child" or "teacher"
-  childId        Int? // Nullable for teacher attendance
-  teacherId      Int? // Nullable for child attendance
-  status         String // "present", "absent", "excused"
-  pengantar      String? // optional who accompanied
-  penjemput      String? // optional who picked up
+  type           String
+  childId        Int?
+  teacherId      Int?
+  status         String
+  pengantar      String?
+  penjemput      String?
   arrivalTime    String?
   departureTime  String?
   remarks        String?
-  child          Child?       @relation(fields: [childId], references: [id], onDelete: Cascade)
-  teacher        Teacher?     @relation(fields: [teacherId], references: [id])
   semesterId     Int
-  semester       Semester     @relation(fields: [semesterId], references: [id])
   academicYearId Int
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+
+  // Add these relation fields
+  child        Child?       @relation(fields: [childId], references: [id])
+  teacher      Teacher?     @relation(fields: [teacherId], references: [id])
+  semester     Semester     @relation(fields: [semesterId], references: [id])
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id])
 }
 
 model Progress {
@@ -156,23 +160,27 @@ model Progress {
   semester       Semester     @relation(fields: [semesterId], references: [id])
   academicYearId Int
   academicYear   AcademicYear @relation(fields: [academicYearId], references: [id])
+
+  isDeleted Boolean @default(false)
+  deletedAt DateTime?
 }
 
 model ProgressDetail {
-  id         Int                 @id @default(autoincrement())
-  category   String // containing moral value, motorGross, etc.
-  progressId Int
-  progress   Progress            @relation(fields: [progressId], references: [id])
-  subDetails SubCategoryDetail[]
+  id               Int                 @id @default(autoincrement())
+  progressId       Int
+  category         String
+  subDetails       SubCategoryDetail[] // <-- This should be an array of related subcategory details
+  progress         Progress             @relation(fields: [progressId], references: [id])
 }
 
 model SubCategoryDetail {
-  id               Int            @id @default(autoincrement())
-  progressDetailId Int
-  subCategory      String
-  status           String
-  progressDetail   ProgressDetail @relation(fields: [progressDetailId], references: [id])
+  id                Int            @id @default(autoincrement())
+  subCategory       String
+  status            String
+  progressDetailId  Int
+  progressDetail    ProgressDetail @relation(fields: [progressDetailId], references: [id])
 }
+
 
 model Document {
   id    Int       @id @default(autoincrement())
@@ -204,7 +212,7 @@ model AcademicYear {
   Attendance Attendance[]
   Progress   Progress[]
   Document   Document[]
-  teachers   Teacher[]    // Tambahan
+  teachers   Teacher[] // Tambahan
   child      Child[]
 }
 
@@ -219,7 +227,7 @@ model Semester {
   attendances     Attendance[]
   progresses      Progress[]
   documents       Document[]
-  teachers        Teacher[]        // Tambahan
+  teachers        Teacher[] // Tambahan
   child           Child[]
 }
 

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-export default function Page() {
+export default function PresensiAnakPage() {
   const [attendance, setAttendance] = useState([]);
   const [children, setChildren] = useState([]);
   const [semesters, setSemesters] = useState([]);
@@ -31,6 +31,10 @@ export default function Page() {
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedAttendanceId, setSelectedAttendanceId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchAttendance();
@@ -42,16 +46,35 @@ export default function Page() {
 
   const fetchAttendance = async () => {
     try {
-      const res = await fetch(`/api/admin/laporan/presensi?semesterId=${selectedSemester}&academicYearId=${selectedAcademicYear}`);
+      setIsLoading(true);
+      setError(null);
+
+      // Build the URL with search params
+      const url = new URL("/api/admin/laporan/presensi", window.location.origin);
+      if (selectedSemester) {
+        url.searchParams.append("semesterId", selectedSemester);
+      }
+      if (selectedAcademicYear) {
+        url.searchParams.append("academicYearId", selectedAcademicYear);
+      }
+
+      const res = await fetch(url);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       if (data.success) {
-        const filteredAttendance = data.attendance.filter((item) => item.type === "child");
-        setAttendance(filteredAttendance);
+        setAttendance(data.attendances || []);
       } else {
-        console.error("Failed to fetch attendance:", data.message);
+        throw new Error(data.error || "Failed to fetch attendance data");
       }
     } catch (error) {
-      console.error("Failed to fetch attendance:", error);
+      setError(error.message);
+      console.error("Error fetching attendance:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -90,6 +113,21 @@ export default function Page() {
       }
     } catch (error) {
       console.error("Failed to fetch academic years:", error);
+    }
+  };
+
+  const fetchAttendances = async () => {
+    try {
+      const response = await fetch("/api/admin/attendance");
+      const data = await response.json();
+      
+      if (data.success) {
+        setAttendance(data.attendances);
+      } else {
+        console.error("Failed to fetch attendances:", data.error);
+      }
+    } catch (error) {
+      console.error("Error fetching attendances:", error);
     }
   };
 
@@ -162,21 +200,29 @@ export default function Page() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch("/api/admin/laporan/presensi", {
-        method: "DELETE",
+      const res = await fetch(`/api/admin/laporan/presensi/softDelete`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id }),
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       if (data.success) {
-        fetchAttendance();
+        await fetchAttendance(); // Note: using fetchAttendance instead of fetchAttendances
+        setIsDeleteDialogOpen(false);
+        alert("Data presensi berhasil dipindahkan ke sampah");
       } else {
-        console.error("Failed to delete attendance:", data.message);
+        throw new Error(data.error || "Failed to delete attendance");
       }
     } catch (error) {
       console.error("Failed to delete attendance:", error);
+      alert("Gagal menghapus data: " + error.message);
     }
   };
 
@@ -699,9 +745,19 @@ export default function Page() {
     document.body.removeChild(iframe);
   };
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
-    <div className="p-6">
-      <h1 className="text-lg font-bold text-primary mb-4 mt-8">Riwayat Presensi</h1>
+    <div className="flex flex-col gap-8 p-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Data Presensi Anak</h1>
+      </div>
       <div className="flex gap-4 mt-4 print-hide">
         <select value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)} className="input">
           <option value="">Pilih Tahun Ajar</option>
@@ -725,9 +781,12 @@ export default function Page() {
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-4 print-hide" onClick={() => setIsDialogOpen(true)}>
-            Tambah Presensi
-          </Button>
+            <Button 
+          className="w-fit bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          Tambah Presensi
+        </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -790,6 +849,31 @@ export default function Page() {
           </form>
         </DialogContent>
       </Dialog>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus data presensi ini?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => setIsDeleteDialogOpen(false)}
+              variant="outline"
+              className="hover:bg-gray-200 font-semibold rounded-xl px-4"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={() => handleDelete(selectedAttendanceId)}
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl px-4"
+            >
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <div id="print-area">
         <Table>
           <TableHeader>
@@ -832,7 +916,7 @@ export default function Page() {
                   <Button className="mr-2" onClick={() => handleEdit(item)}>
                     Edit
                   </Button>
-                  <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>
+                  <Button className="bg-red-500 text-white" onClick={() => { setSelectedAttendanceId(item.id); setIsDeleteDialogOpen(true); }}>
                     Delete
                   </Button>
                 </TableCell>
@@ -841,10 +925,19 @@ export default function Page() {
           </TableBody>
         </Table>
       </div>
+     <div className="space-x-2">
+          
+        </div>
       <div className="w-full flex justify-end mt-8 print-hide gap-2">
+        <Link href="/laporan/presensi-anak/sampah">
+            <Button className="bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl px-4">
+              Sampah
+            </Button>
+          </Link>
         <Button onClick={handlePrint} className="bg-primary px-4 rounded-lg text-white font-semibold">
           Cetak PDF
         </Button>
+        
         <Link href={"/laporan"}>
           <Button className="bg-primary px-4 rounded-lg text-white font-semibold">Kembali</Button>
         </Link>

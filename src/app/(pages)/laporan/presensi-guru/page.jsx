@@ -1,3 +1,5 @@
+//src/app/(pages)/laporan/presensi-anak/page.jsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -29,6 +31,8 @@ export default function Page() {
   });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedAttendanceId, setSelectedAttendanceId] = useState(null);
 
   useEffect(() => {
     fetchAttendance();
@@ -38,20 +42,23 @@ export default function Page() {
     // eslint-disable-next-line
   }, [selectedSemester, selectedAcademicYear]);
 
-  const fetchAttendance = async () => {
-    try {
-      const res = await fetch(`/api/admin/laporan/presensi?semesterId=${selectedSemester}&academicYearId=${selectedAcademicYear}`);
-      const data = await res.json();
-      if (data.success) {
-        const filteredAttendance = data.attendance.filter((item) => item.type === "teacher");
-        setAttendance(filteredAttendance);
-      } else {
-        console.error("Failed to fetch attendance:", data.message);
-      }
-    } catch (error) {
-      console.error("Failed to fetch attendance:", error);
+  // Ganti URL fetch attendance
+const fetchAttendance = async () => {
+  try {
+    const url = new URL("/api/admin/laporan/presensi", window.location.origin);
+    url.searchParams.append("type", "teacher"); // Tambahkan parameter type
+    if (selectedSemester) url.searchParams.append("semesterId", selectedSemester);
+    if (selectedAcademicYear) url.searchParams.append("academicYearId", selectedAcademicYear);
+    
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.success) {
+      setAttendance(data.attendances);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching attendance:", error);
+  }
+};
 
   const fetchTeachers = async () => {
     try {
@@ -156,21 +163,29 @@ export default function Page() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch("/api/admin/laporan/presensi", {
-        method: "DELETE",
+      const res = await fetch(`/api/admin/laporan/presensi/softDelete`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ id }),
       });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
       const data = await res.json();
       if (data.success) {
-        fetchAttendance();
+        await fetchAttendance();
+        setIsDeleteDialogOpen(false);
+        alert("Data presensi berhasil dipindahkan ke sampah");
       } else {
-        console.error("Failed to delete attendance:", data.message);
+        throw new Error(data.error || "Failed to delete attendance");
       }
     } catch (error) {
       console.error("Failed to delete attendance:", error);
+      alert("Gagal menghapus data: " + error.message);
     }
   };
 
@@ -406,7 +421,7 @@ export default function Page() {
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-          <Button className="mb-4 print-hide" onClick={() => setIsDialogOpen(true)}>
+          <Button className="bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4" onClick={() => setIsDialogOpen(true)}>
             Tambah Presensi
           </Button>
         </DialogTrigger>
@@ -497,7 +512,7 @@ export default function Page() {
                   <Button className="mr-2" onClick={() => handleEdit(item)}>
                     Edit
                   </Button>
-                  <Button className="bg-red-500 text-white" onClick={() => handleDelete(item.id)}>
+                  <Button className="bg-red-500 text-white" onClick={() => { setSelectedAttendanceId(item.id); setIsDeleteDialogOpen(true); }}>
                     Delete
                   </Button>
                 </TableCell>
@@ -507,6 +522,11 @@ export default function Page() {
         </Table>
       </div>
       <div className="w-full flex justify-end mt-8 print-hide gap-2">
+        <Link href="/laporan/presensi-guru/sampah">
+          <Button className="bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl px-4">
+            Sampah
+          </Button>
+        </Link>
         <Button onClick={handlePrint} className="bg-primary px-4 rounded-lg text-white font-semibold">
           Cetak PDF
         </Button>
@@ -514,6 +534,32 @@ export default function Page() {
           <Button className="bg-primary px-4 rounded-lg text-white font-semibold">Kembali</Button>
         </Link>
       </div>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus data presensi ini?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => setIsDeleteDialogOpen(false)}
+              variant="outline"
+              className="hover:bg-gray-200 font-semibold rounded-xl px-4"
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={() => handleDelete(selectedAttendanceId)}
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl px-4"
+            >
+              Hapus
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

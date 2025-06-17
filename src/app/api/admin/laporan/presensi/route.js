@@ -1,6 +1,6 @@
 // /pages/api/admin/laporan/presensi/route.js
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -10,48 +10,32 @@ export async function GET(req) {
   const academicYearId = searchParams.get("academicYearId");
 
   const whereClause = {
+    isDeleted: false,
     ...(semesterId && { semesterId: parseInt(semesterId) }),
     ...(academicYearId && { academicYearId: parseInt(academicYearId) }),
   };
 
   try {
-    const attendance = await prisma.attendance.findMany({
+    const attendances = await prisma.attendance.findMany({
       where: whereClause,
       include: {
-        child: {
-          select: {
-            name: true,
-            parent: {
-              select: {
-                user: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-        teacher: {
-          select: {
-            name: true,
-          },
-        },
-        semester: {
-          select: {
-            number: true,
-          },
-        },
-        academicYear: {
-          select: {
-            year: true,
-          },
-        },
+        child: true,
+        teacher: true, // Menambahkan include teacher
+        semester: true,
+        academicYear: true
       },
+      orderBy: {
+        date: 'desc'
+      }
     });
-    return NextResponse.json({ success: true, attendance });
+
+    return NextResponse.json({ success: true, attendances });
   } catch (error) {
-    return NextResponse.json({ success: false, error: error.message });
+    console.error("Error fetching attendance:", error);
+    return NextResponse.json({ 
+      success: false, 
+      error: error.message 
+    }, { status: 500 });
   }
 }
 
@@ -83,7 +67,7 @@ export async function POST(req) {
 }
 
 export async function PUT(req) {
-  const { id, date, type, childId, teacherId, status, arrivalTime, departureTime, remarks, penjemput, pengantar, semesterId, academicYearId } = await req.json();
+  const { id, date, type, childId, teacherId, status, arrivalTime, departureTime, remarks, semesterId, academicYearId } = await req.json();
 
   try {
     const attendance = await prisma.attendance.update({
@@ -91,16 +75,14 @@ export async function PUT(req) {
       data: {
         date: new Date(date),
         type,
-        child: childId ? { connect: { id: parseInt(childId) } } : { disconnect: true },
-        teacher: teacherId ? { connect: { id: parseInt(teacherId) } } : { disconnect: true },
+        childId: childId ? parseInt(childId) : null,
+        teacherId: teacherId ? parseInt(teacherId) : null,
         status,
         arrivalTime: arrivalTime || null,
         departureTime: departureTime || null,
         remarks,
-        penjemput,
-        pengantar,
-        semester: { connect: { id: parseInt(semesterId) } },
-        academicYear: { connect: { id: parseInt(academicYearId) } },
+        semesterId: parseInt(semesterId),
+        academicYearId: parseInt(academicYearId),
       },
     });
 
@@ -110,14 +92,22 @@ export async function PUT(req) {
   }
 }
 
+// Modify DELETE to perform soft delete instead of hard delete
 export async function DELETE(req) {
   const { id } = await req.json();
 
   try {
-    await prisma.attendance.delete({
+    const updatedAttendance = await prisma.attendance.update({
       where: { id: parseInt(id) },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date()
+      },
     });
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      message: "Data presensi berhasil dipindahkan ke sampah"
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });
   }
