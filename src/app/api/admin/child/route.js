@@ -5,7 +5,22 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function POST(req) {
-  const { parentId, name, studentId, phone, birthDate, gender, address, city, postalCode, country, classId, profilePhoto } = await req.json();
+  const { 
+    parentId, 
+    name, 
+    studentId, 
+    phone, 
+    birthDate, 
+    gender, 
+    address, 
+    city, 
+    postalCode, 
+    country, 
+    classId, 
+    profilePhoto,
+    academicYear,  // ID tahun ajaran
+    semester       // ID semester
+  } = await req.json();
 
   try {
     const child = await prisma.child.create({
@@ -19,9 +34,12 @@ export async function POST(req) {
         city,
         postalCode,
         country,
-        parentId,
-        classId,
-        profilePhoto, // Add this line
+        parentId: parseInt(parentId),        // Convert ke integer
+        classId: parseInt(classId),          // Convert ke integer
+        profilePhoto,
+        // Tambahkan relasi langsung ke semester dan academicYear
+        semesterId: semester ? parseInt(semester) : null,
+        academicYearId: academicYear ? parseInt(academicYear) : null,
       },
     });
     return NextResponse.json({ success: true, child });
@@ -30,19 +48,50 @@ export async function POST(req) {
   }
 }
 
-export async function GET() {
+export async function GET(req) {
+  const { searchParams } = new URL(req.url);
+  const semesterId = searchParams.get("semesterId");
+  const academicYearId = searchParams.get("academicYearId");
+
   try {
+    const whereClause = {
+      isDeleted: false,
+      ...(semesterId && { semesterId: parseInt(semesterId) }),
+      ...(academicYearId && { academicYearId: parseInt(academicYearId) }),
+    };
+
     const children = await prisma.child.findMany({
-      where: {
-        isDeleted: false // Hanya ambil data yang belum dihapus
-      },
+      where: whereClause,
       include: {
         parent: {
           include: {
-            user: true
+            user: {
+              select: {
+                name: true,
+                email: true
+              }
+            }
           }
         },
-        class: true
+        class: {
+          include: {
+            semester: {
+              include: {
+                academicYear: true
+              }
+            }
+          }
+        },
+        // Include relasi langsung semester dan academicYear
+        semester: {
+          include: {
+            academicYear: true
+          }
+        },
+        academicYear: true
+      },
+      orderBy: {
+        name: 'asc'
       }
     });
 
@@ -53,30 +102,46 @@ export async function GET() {
 }
 
 export async function PUT(req) {
-  const { id, parentId, name, studentId, phone, birthDate, gender, address, city, postalCode, country, classId, profilePhoto } = await req.json();
+  const { 
+    id, 
+    parentId, 
+    name, 
+    studentId, 
+    phone, 
+    birthDate, 
+    gender, 
+    address, 
+    city, 
+    postalCode, 
+    country, 
+    classId, 
+    profilePhoto,
+    academicYear,  // ID tahun ajaran
+    semester       // ID semester
+  } = await req.json();
 
   try {
-    const updateData = {};
-
-    if (name !== undefined) updateData.name = name;
-    if (studentId !== undefined) updateData.studentId = studentId;
-    if (phone !== undefined) updateData.phone = phone;
-    if (birthDate !== undefined) updateData.birthDate = new Date(birthDate);
-    if (gender !== undefined) updateData.gender = gender;
-    if (address !== undefined) updateData.address = address;
-    if (city !== undefined) updateData.city = city;
-    if (postalCode !== undefined) updateData.postalCode = postalCode;
-    if (country !== undefined) updateData.country = country;
-    if (parentId !== undefined) updateData.parentId = parseInt(parentId);
-    if (classId !== undefined) updateData.classId = parseInt(classId);
-    if (profilePhoto !== undefined) updateData.profilePhoto = profilePhoto;
-
-    const updatedChild = await prisma.child.update({
+    const child = await prisma.child.update({
       where: { id: parseInt(id) },
-      data: updateData,
+      data: {
+        name,
+        studentId,
+        phone,
+        birthDate: new Date(birthDate),
+        gender,
+        address,
+        city,
+        postalCode,
+        country,
+        parentId: parseInt(parentId),        // Convert ke integer
+        classId: parseInt(classId),          // Convert ke integer
+        profilePhoto,
+        // Update relasi langsung ke semester dan academicYear
+        semesterId: semester ? parseInt(semester) : null,
+        academicYearId: academicYear ? parseInt(academicYear) : null,
+      },
     });
-
-    return NextResponse.json({ success: true, child: updatedChild });
+    return NextResponse.json({ success: true, child });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });
   }
@@ -87,7 +152,7 @@ export async function DELETE(req) {
 
   try {
     await prisma.child.delete({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id) },    // Convert ke integer
     });
     return NextResponse.json({ success: true });
   } catch (error) {

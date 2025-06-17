@@ -19,24 +19,30 @@ export default function Page() {
   const [academicYears, setAcademicYears] = useState([]);
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedAcademicYear, setSelectedAcademicYear] = useState("");
-  // Add new states for delete dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteTeacherId, setDeleteTeacherId] = useState(null);
 
+  // Initial fetch
   useEffect(() => {
     fetch("/api/semester")
       .then((res) => res.json())
-      .then((data) => setSemesters(data.semesters));
+      .then((data) => setSemesters(data.semesters || []));
     fetch("/api/academicYear")
       .then((res) => res.json())
-      .then((data) => setAcademicYears(data.academicYears));
+      .then((data) => setAcademicYears(data.academicYears || []));
     fetchTeachers();
   }, []);
+
+  // Auto fetch when filter changes
+  useEffect(() => {
+    fetchTeachers();
+  }, [selectedSemester, selectedAcademicYear]);
 
   const fetchTeachers = async () => {
     const params = new URLSearchParams();
     if (selectedSemester) params.append("semesterId", selectedSemester);
     if (selectedAcademicYear) params.append("academicYearId", selectedAcademicYear);
+    
     try {
       const res = await fetch(`/api/admin/teacher?${params.toString()}`, {
         method: "GET",
@@ -81,7 +87,6 @@ export default function Page() {
     setEditData(null);
   };
 
-  // Modified delete handlers
   const handleDeleteClick = (id) => {
     setDeleteTeacherId(id);
     setIsDeleteDialogOpen(true);
@@ -100,9 +105,8 @@ export default function Page() {
       const data = await res.json();
 
       if (data.success) {
-        fetchTeachers(); // Refresh data
+        fetchTeachers();
         setIsDeleteDialogOpen(false);
-        // Optional: Tambahkan notifikasi berhasil
         alert("Data guru berhasil dipindahkan ke sampah");
       } else {
         console.error("Failed to delete teacher:", data.error);
@@ -114,7 +118,27 @@ export default function Page() {
     }
   };
 
-  // Fungsi untuk mencetak hanya tabel dengan iframe
+  // Get dynamic semester and academic year names for display
+  const getSelectedSemesterName = () => {
+    if (!selectedSemester) return "Semua Semester";
+    const semester = semesters.find(s => s.id.toString() === selectedSemester.toString());
+    return semester ? `Semester ${semester.number}` : "Tidak Ditemukan";
+  };
+
+  const getSelectedAcademicYearName = () => {
+    if (!selectedAcademicYear) return "Semua Tahun Ajar";
+    const year = academicYears.find(y => y.id.toString() === selectedAcademicYear.toString());
+    return year ? year.year : "Tidak Ditemukan";
+  };
+
+  // Convert semester number to Ganjil/Genap for print
+  const getSemesterText = () => {
+    if (!selectedSemester) return "Semua Semester";
+    const semester = semesters.find(s => s.id.toString() === selectedSemester.toString());
+    if (!semester) return "Semua Semester";
+    return semester.number === 1 ? "Ganjil" : semester.number === 2 ? "Genap" : `Semester ${semester.number}`;
+  };
+
   const handlePrint = () => {
     const printContent = document.getElementById("print-area").innerHTML;
     const iframe = document.createElement("iframe");
@@ -131,10 +155,13 @@ export default function Page() {
       year: "numeric",
     });
 
+    const selectedAcademicYearName = getSelectedAcademicYearName();
+    const semesterText = getSemesterText();
+
     doc.write(`
       <html>
         <head>
-          <title>Daftar Guru - TPA Firdaus</title>
+          <title>Daftar Guru - TPA Duta Firdaus</title>
           <meta charset="UTF-8">
           <style>
             @page {
@@ -155,27 +182,38 @@ export default function Page() {
               color: #2c2c2c;
               background: white;
             }
-  
-            /* Header Section */
+
+            .watermark {
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) rotate(-45deg);
+              font-size: 120px;
+              color: rgba(30, 64, 175, 0.03);
+              font-weight: 900;
+              z-index: -1;
+              pointer-events: none;
+            }
+
             .document-header {
               border-bottom: 3px solid #1e40af;
               padding-bottom: 20px;
               margin-bottom: 30px;
               position: relative;
             }
-  
+
             .header-top {
               display: flex;
               align-items: center;
               justify-content: space-between;
               margin-bottom: 15px;
             }
-  
+
             .logo-section {
               display: flex;
               align-items: center;
             }
-  
+
             .logo-placeholder {
               width: 60px;
               height: 60px;
@@ -189,7 +227,7 @@ export default function Page() {
               font-size: 24px;
               margin-right: 15px;
             }
-  
+
             .company-info h1 {
               font-size: 24px;
               font-weight: 700;
@@ -197,26 +235,25 @@ export default function Page() {
               margin-bottom: 3px;
               letter-spacing: 0.5px;
             }
-  
+
             .company-info p {
               font-size: 11px;
               color: #64748b;
               margin-bottom: 2px;
             }
-  
+
             .document-meta {
               text-align: right;
               font-size: 10px;
               color: #64748b;
             }
-  
+
             .document-meta .doc-number {
               font-weight: 600;
               color: #1e40af;
               font-size: 11px;
             }
-  
-            /* Title Section */
+
             .document-title {
               text-align: center;
               margin-bottom: 25px;
@@ -224,7 +261,7 @@ export default function Page() {
               background: linear-gradient(90deg, #f8fafc, #e2e8f0, #f8fafc);
               border-radius: 6px;
             }
-  
+
             .document-title h2 {
               font-size: 20px;
               font-weight: 700;
@@ -233,14 +270,13 @@ export default function Page() {
               text-transform: uppercase;
               letter-spacing: 1px;
             }
-  
+
             .document-title .subtitle {
               font-size: 12px;
               color: #64748b;
               font-style: italic;
             }
-  
-            /* Info Section */
+
             .info-section {
               display: flex;
               justify-content: space-between;
@@ -250,11 +286,11 @@ export default function Page() {
               border-left: 4px solid #1e40af;
               border-radius: 0 6px 6px 0;
             }
-  
+
             .info-item {
               text-align: center;
             }
-  
+
             .info-item .label {
               font-size: 10px;
               color: #64748b;
@@ -262,32 +298,31 @@ export default function Page() {
               letter-spacing: 0.5px;
               margin-bottom: 3px;
             }
-  
+
             .info-item .value {
               font-size: 14px;
               font-weight: 600;
               color: #1e293b;
             }
-  
-            /* Table Styles */
+
             .table-container {
               margin-bottom: 30px;
               box-shadow: 0 1px 3px rgba(0,0,0,0.1);
               border-radius: 8px;
               overflow: hidden;
             }
-  
+
             table {
               width: 100%;
               border-collapse: collapse;
               font-size: 11px;
             }
-  
+
             thead {
               background: linear-gradient(135deg, #1e40af, #3b82f6);
               color: white;
             }
-  
+
             th {
               padding: 12px 8px;
               text-align: center;
@@ -297,40 +332,39 @@ export default function Page() {
               font-size: 10px;
               border-right: 1px solid rgba(255,255,255,0.2);
             }
-  
+
             th:last-child {
               border-right: none;
             }
-  
+
             tbody tr {
               border-bottom: 1px solid #e2e8f0;
             }
-  
+
             tbody tr:nth-child(even) {
               background-color: #f8fafc;
             }
-  
+
             tbody tr:hover {
               background-color: #e2e8f0;
             }
-  
+
             td {
               padding: 10px 8px;
               text-align: center;
               vertical-align: middle;
               border-right: 1px solid #e2e8f0;
             }
-  
+
             td:last-child {
               border-right: none;
             }
-  
+
             td:first-child {
               font-weight: 600;
               color: #1e293b;
             }
-  
-            /* Summary Section */
+
             .summary-section {
               margin-top: 25px;
               padding: 15px;
@@ -338,7 +372,7 @@ export default function Page() {
               border-radius: 6px;
               border: 1px solid #e2e8f0;
             }
-  
+
             .summary-title {
               font-size: 12px;
               font-weight: 600;
@@ -347,20 +381,19 @@ export default function Page() {
               text-transform: uppercase;
               letter-spacing: 0.5px;
             }
-  
+
             .summary-content {
               display: flex;
               justify-content: space-between;
               align-items: center;
             }
-  
+
             .total-count {
               font-size: 14px;
               font-weight: 700;
               color: #1e40af;
             }
-  
-            /* Footer */
+
             .document-footer {
               margin-top: 40px;
               padding-top: 20px;
@@ -369,42 +402,41 @@ export default function Page() {
               justify-content: space-between;
               align-items: end;
             }
-  
+
             .footer-left {
               font-size: 10px;
               color: #64748b;
             }
-  
+
             .signature-section {
               text-align: center;
               min-width: 200px;
             }
-  
+
             .signature-title {
               font-size: 11px;
               color: #1e293b;
               margin-bottom: 50px;
               font-weight: 600;
             }
-  
+
             .signature-line {
               border-bottom: 1px solid #1e293b;
               margin-bottom: 5px;
               height: 1px;
             }
-  
+
             .signature-name {
               font-size: 11px;
               color: #1e293b;
               font-weight: 600;
             }
-  
+
             .signature-title-below {
               font-size: 10px;
               color: #64748b;
             }
-  
-            /* Print specific */
+
             @media print {
               body {
                 -webkit-print-color-adjust: exact;
@@ -415,49 +447,53 @@ export default function Page() {
                 page-break-before: always;
               }
             }
-  
-            /* Watermark */
-            .watermark {
-              position: fixed;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%) rotate(-45deg);
-              font-size: 120px;
-              color: rgba(30, 64, 175, 0.03);
-              font-weight: 900;
-              z-index: -1;
-              pointer-events: none;
-            }
           </style>
         </head>
         <body>
-          <div class="watermark">TPA FIRDAUS</div>
+          <div class="watermark">TPA DUTA FIRDAUS</div>
           
           <div class="document-header">
             <div class="header-top">
               <div class="logo-section">
-               
+                <div class="logo-placeholder">TDF</div>
                 <div class="company-info">
                   <h1>TPA DUTA FIRDAUS</h1>
-              <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
-              <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
+                  <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+                  <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
                 </div>
               </div>
               <div class="document-meta">
-                <div class="doc-number">DOC/TPAFIRDAUS/GURU/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")}</div>
+                <div class="doc-number">DOC/TDF/GURU/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")}</div>
                 <div>Tanggal Cetak: ${currentDate}</div>
                 <div>Halaman 1 dari 1</div>
               </div>
             </div>
           </div>
-  
+
           <div class="document-title">
             <h2>Daftar Guru Aktif</h2>
-            <div class="subtitle">Tahun Ajaran ${selectedAcademicYear ? academicYears.find((y) => y.id === parseInt(selectedAcademicYear))?.year : "Semua Tahun Ajar"} - Semester ${(selectedSemester == "1" ? "Ganjil" : "Genap") || "Semua Semester"}</div>
+            <div class="subtitle">Tahun Ajaran ${selectedAcademicYearName} - ${semesterText}</div>
           </div>
-  
-          
-  
+
+          <div class="info-section">
+            <div class="info-item">
+              <div class="label">Total Guru</div>
+              <div class="value">${teachers.length} Orang</div>
+            </div>
+            <div class="info-item">
+              <div class="label">Status</div>
+              <div class="value">Aktif</div>
+            </div>
+            <div class="info-item">
+              <div class="label">Semester</div>
+              <div class="value">${semesterText}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">Tahun Ajaran</div>
+              <div class="value">${selectedAcademicYearName}</div>
+            </div>
+          </div>
+
           <div class="table-container">
             <table>
               <thead>
@@ -488,7 +524,7 @@ export default function Page() {
               </tbody>
             </table>
           </div>
-  
+
           <div class="summary-section">
             <div class="summary-title">Ringkasan</div>
             <div class="summary-content">
@@ -500,15 +536,20 @@ export default function Page() {
               </div>
             </div>
           </div>
-  
+
           <div class="document-footer">
             <div class="footer-left">
-              <div><strong>TPA Firdaus</strong></div>
+              <div><strong>TPA Duta Firdaus</strong></div>
               <div>Dokumen ini digenerate secara otomatis oleh sistem</div>
-              <div>© ${new Date().getFullYear()} TPA Firdaus. All rights reserved.</div>
+              <div>© ${new Date().getFullYear()} TPA Duta Firdaus. All rights reserved.</div>
             </div>
             <div class="signature-section">
-             
+              <div class="signature-title">Mengetahui,</div>
+              <div class="signature-title">Kepala Sekolah</div>
+              <div style="margin: 50px 0 10px 0;"></div>
+              <div class="signature-line"></div>
+              <div class="signature-name">Dr. Ahmad Firdaus, M.Pd</div>
+              <div class="signature-title-below">NIP: 19801234567890123456</div>
             </div>
           </div>
         </body>
@@ -545,7 +586,7 @@ export default function Page() {
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-gray-300">Semester</p>
-            <p className="font-bold text-lg">{selectedSemester || "Semua Semester"}</p>
+            <p className="font-bold text-lg">{getSelectedSemesterName()}</p>
           </div>
         </div>
         <div className="flex gap-4 items-center">
@@ -554,14 +595,18 @@ export default function Page() {
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-gray-300">Tahun Ajar</p>
-            <p className="font-bold text-lg">{selectedAcademicYear ? academicYears.find((y) => y.id === parseInt(selectedAcademicYear))?.year : "Semua Tahun Ajar"}</p>
+            <p className="font-bold text-lg">{getSelectedAcademicYearName()}</p>
           </div>
         </div>
       </div>
-      {console.log(academicYears)}
 
+      {/* Filter Section - Removed Filter Button */}
       <div className="flex gap-4 mb-4">
-        <select value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)}>
+        <select 
+          value={selectedAcademicYear} 
+          onChange={(e) => setSelectedAcademicYear(e.target.value)}
+          className="border border-gray-300 rounded-md p-2 min-w-[200px]"
+        >
           <option value="">Semua Tahun Ajaran</option>
           {academicYears.map((y) => (
             <option key={y.id} value={y.id}>
@@ -569,7 +614,11 @@ export default function Page() {
             </option>
           ))}
         </select>
-        <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)}>
+        <select 
+          value={selectedSemester} 
+          onChange={(e) => setSelectedSemester(e.target.value)}
+          className="border border-gray-300 rounded-md p-2 min-w-[200px]"
+        >
           <option value="">Semua Semester</option>
           {semesters.map((s) => (
             <option key={s.id} value={s.id}>
@@ -577,11 +626,17 @@ export default function Page() {
             </option>
           ))}
         </select>
-        <Button onClick={fetchTeachers}>Filter</Button>
       </div>
 
       {isTambahGuru || isEditGuru ? (
-        <FormGuru status={isEditGuru ? "edit" : "tambah"} data={editData} selectedAcademicYear={selectedAcademicYear} selectedSemester={selectedSemester} onKembali={handleKembali} fetchTeachers={fetchTeachers} />
+        <FormGuru 
+          status={isEditGuru ? "edit" : "tambah"} 
+          data={editData} 
+          selectedAcademicYear={selectedAcademicYear} 
+          selectedSemester={selectedSemester} 
+          onKembali={handleKembali} 
+          fetchTeachers={fetchTeachers} 
+        />
       ) : (
         <>
           <div id="print-area">
@@ -635,7 +690,7 @@ export default function Page() {
         </>
       )}
 
-      {/* Add Delete Confirmation Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -657,30 +712,6 @@ export default function Page() {
         @media print {
           .print-hide {
             display: none !important;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-          }
-          th,
-          td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-          }
-          th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-          }
-          table {
-            margin-top: 20px;
-            padding: 10px;
-          }
-          h1 {
-            font-size: 24px;
-            text-align: center;
-            margin-bottom: 20px;
           }
         }
       `}</style>

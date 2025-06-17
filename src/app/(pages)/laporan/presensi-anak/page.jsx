@@ -6,6 +6,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogFooter, Dialo
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { CalendarCheck, GraduationCap, Filter, MessageSquareWarning } from "lucide-react";
 import Link from "next/link";
 
 export default function PresensiAnakPage() {
@@ -50,7 +51,7 @@ export default function PresensiAnakPage() {
       setError(null);
 
       // Build the URL with search params
-      const url = new URL("/api/admin/laporan/presensi", window.location.origin);
+      const url = new URL("/api/admin/laporan/presensi/presensi-anak", window.location.origin);
       if (selectedSemester) {
         url.searchParams.append("semesterId", selectedSemester);
       }
@@ -59,7 +60,7 @@ export default function PresensiAnakPage() {
       }
 
       const res = await fetch(url);
-      
+
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
@@ -120,7 +121,7 @@ export default function PresensiAnakPage() {
     try {
       const response = await fetch("/api/admin/attendance");
       const data = await response.json();
-      
+
       if (data.success) {
         setAttendance(data.attendances);
       } else {
@@ -139,7 +140,7 @@ export default function PresensiAnakPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/admin/laporan/presensi", {
+      const res = await fetch("/api/admin/laporan/presensi/presensi-anak", {
         method: isEditMode ? "PUT" : "POST",
         headers: {
           "Content-Type": "application/json",
@@ -226,8 +227,18 @@ export default function PresensiAnakPage() {
     }
   };
 
-  const handleFilterChange = async () => {
-    fetchAttendance();
+  const formatTime = (timeStr) => {
+    if (!timeStr) return "-";
+    // Jika format sudah HH:MM, langsung return
+    if (/^\d{2}:\d{2}$/.test(timeStr)) return timeStr;
+    // Jika format ada spasi (ex: 2025-01-23 00:21:00)
+    if (timeStr.includes(" ")) {
+      const [, time] = timeStr.split(" ");
+      return time ? time.slice(0, 5) : "-";
+    }
+    // Jika format 00:21:00
+    if (timeStr.length >= 5) return timeStr.slice(0, 5);
+    return timeStr;
   };
 
   // PRINT ONLY TABLE
@@ -745,9 +756,9 @@ export default function PresensiAnakPage() {
     document.body.removeChild(iframe);
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  // if (isLoading) {
+  //   return <div>Loading...</div>;
+  // }
 
   if (error) {
     return <div>Error: {error}</div>;
@@ -758,35 +769,63 @@ export default function PresensiAnakPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Data Presensi Anak</h1>
       </div>
-      <div className="flex gap-4 mt-4 print-hide">
-        <select value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)} className="input">
-          <option value="">Pilih Tahun Ajar</option>
-          {academicYears.map((year) => (
-            <option key={year.id} value={year.id}>
-              {year.year}
-            </option>
-          ))}
-        </select>
-        <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} className="input">
-          <option value="">Pilih Semester</option>
-          {semesters.map((semester) => (
-            <option key={semester.id} value={semester.id}>
-              Semester {semester.number}
-            </option>
-          ))}
-        </select>
-        <Button onClick={handleFilterChange} className="btn btn-primary">
-          Filter
-        </Button>
+      <div className="bg-white p-6 rounded-xl shadow-md border mb-4 print-hide">
+        {/* <div className="flex items-center gap-2 mb-4">
+    <Filter className="text-primary" />
+    <h3 className="text-lg font-semibold text-primary">Filter Data Presensi</h3>
+  </div> */}
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1">
+              <GraduationCap className="w-4 h-4" /> Tahun Ajaran
+            </label>
+            <select value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)} className="border border-gray-300 rounded-lg p-3 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Pilih Tahun Ajar</option>
+              {academicYears.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.year}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1">
+              <CalendarCheck className="w-4 h-4" /> Semester
+            </label>
+            <select value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} className="border border-gray-300 rounded-lg p-3 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Pilih Semester</option>
+              {semesters.map((semester) => (
+                <option key={semester.id} value={semester.id}>
+                  Semester {semester.number}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-600 mb-2 opacity-0">Status</label>
+            <div>
+              {selectedAcademicYear && selectedSemester ? (
+                <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-4 py-2 rounded-lg border border-green-200 font-medium">
+                  <span className="text-lg">✓</span> Filter aktif
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg border border-yellow-200 font-medium">
+                  <span className="text-lg">
+                    <MessageSquareWarning />
+                  </span>
+                  Harap Pilih filter terlebih dahulu untuk tambah presensi
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
-            <Button 
-          className="w-fit bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          Tambah Presensi
-        </Button>
+          <Button className="w-fit bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4" onClick={() => setIsDialogOpen(true)} disabled={selectedAcademicYear === "" || selectedSemester === ""}>
+            {console.log(selectedAcademicYear, "JANCOK", selectedSemester)}
+            Tambah Presensi
+          </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
@@ -794,14 +833,18 @@ export default function PresensiAnakPage() {
             <DialogDescription>Isi form berikut untuk {isEditMode ? "mengedit" : "menambahkan"} data presensi.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="date">Tanggal</Label>
-                <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
+                <Label htmlFor="date" className="mb-1 block">
+                  Tanggal
+                </Label>
+                <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" />
               </div>
               <div>
-                <Label htmlFor="childId">Nama Anak</Label>
-                <select id="childId" name="childId" value={formData.childId} onChange={handleInputChange} className="border border-gray-300 rounded-md p-2" required>
+                <Label htmlFor="childId" className="mb-1 block">
+                  Nama Anak
+                </Label>
+                <select id="childId" name="childId" value={formData.childId} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
                   <option value="">Pilih Anak</option>
                   {children.map((child) => (
                     <option key={child.id} value={child.id}>
@@ -811,40 +854,54 @@ export default function PresensiAnakPage() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="status">Status</Label>
-                <select id="status" name="status" value={formData.status} onChange={handleInputChange} className="border border-gray-300 rounded-md p-2" required>
+                <Label htmlFor="status" className="mb-1 block">
+                  Status Kehadiran
+                </Label>
+                <select id="status" name="status" value={formData.status} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" required>
                   <option value="present">Hadir</option>
                   <option value="excused">Sakit</option>
                   <option value="absent">Alpa</option>
                 </select>
               </div>
+              <div>
+                <Label htmlFor="remarks" className="mb-1 block">
+                  Keterangan
+                </Label>
+                <Input id="remarks" name="remarks" type="text" value={formData.remarks} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Contoh: Izin dokter, dll" />
+              </div>
               {formData.status === "present" && (
                 <>
                   <div>
-                    <Label htmlFor="arrivalTime">Jam Datang</Label>
-                    <Input id="arrivalTime" name="arrivalTime" type="time" value={formData.arrivalTime} onChange={handleInputChange} />
+                    <Label htmlFor="arrivalTime" className="mb-1 block">
+                      Jam Datang
+                    </Label>
+                    <Input id="arrivalTime" name="arrivalTime" type="time" value={formData.arrivalTime} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
-                    <Label htmlFor="departureTime">Jam Pulang</Label>
-                    <Input id="departureTime" name="departureTime" type="time" value={formData.departureTime} onChange={handleInputChange} />
+                    <Label htmlFor="departureTime" className="mb-1 block">
+                      Jam Pulang
+                    </Label>
+                    <Input id="departureTime" name="departureTime" type="time" value={formData.departureTime} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
-                    <Label htmlFor="penjemput">Penjemput</Label>
-                    <Input id="penjemput" name="penjemput" type="text" value={formData.penjemput} onChange={handleInputChange} />
+                    <Label htmlFor="penjemput" className="mb-1 block">
+                      Penjemput
+                    </Label>
+                    <Input id="penjemput" name="penjemput" type="text" value={formData.penjemput} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Nama penjemput" />
                   </div>
                   <div>
-                    <Label htmlFor="pengantar">Pengantar</Label>
-                    <Input id="pengantar" name="pengantar" type="text" value={formData.pengantar} onChange={handleInputChange} />
+                    <Label htmlFor="pengantar" className="mb-1 block">
+                      Pengantar
+                    </Label>
+                    <Input id="pengantar" name="pengantar" type="text" value={formData.pengantar} onChange={handleInputChange} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500" placeholder="Nama pengantar" />
                   </div>
                 </>
               )}
-              <div>
-                <Label htmlFor="remarks">Keterangan</Label>
-                <Input id="remarks" name="remarks" type="text" value={formData.remarks} onChange={handleInputChange} />
-              </div>
             </div>
-            <DialogFooter>
-              <Button type="submit">{isEditMode ? "Update" : "Simpan"}</Button>
+            <DialogFooter className="mt-6">
+              <Button type="submit" className="w-full md:w-auto">
+                {isEditMode ? "Update" : "Simpan"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -853,22 +910,13 @@ export default function PresensiAnakPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Konfirmasi Hapus</DialogTitle>
-            <DialogDescription>
-              Apakah Anda yakin ingin menghapus data presensi ini?
-            </DialogDescription>
+            <DialogDescription>Apakah Anda yakin ingin menghapus data presensi ini?</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              onClick={() => setIsDeleteDialogOpen(false)}
-              variant="outline"
-              className="hover:bg-gray-200 font-semibold rounded-xl px-4"
-            >
+            <Button onClick={() => setIsDeleteDialogOpen(false)} variant="outline" className="hover:bg-gray-200 font-semibold rounded-xl px-4">
               Batal
             </Button>
-            <Button
-              onClick={() => handleDelete(selectedAttendanceId)}
-              className="bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl px-4"
-            >
+            <Button onClick={() => handleDelete(selectedAttendanceId)} className="bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl px-4">
               Hapus
             </Button>
           </DialogFooter>
@@ -896,8 +944,8 @@ export default function PresensiAnakPage() {
                 <TableCell className="text-center">{new Date(item.date).toLocaleDateString()}</TableCell>
                 <TableCell className="text-center">{item.child ? item.child.name : "-"}</TableCell>
                 <TableCell className="text-center">{item.status === "present" ? item.pengantar : "-"}</TableCell>
-                <TableCell className="text-center">{item.status === "present" && item.arrivalTime ? item.arrivalTime : "-"}</TableCell>
-                <TableCell className="text-center">{item.status === "present" && item.departureTime ? item.departureTime : "-"}</TableCell>
+                <TableCell className="text-center">{item.status === "present" && item.arrivalTime ? formatTime(item.arrivalTime) : "-"}</TableCell>
+                <TableCell className="text-center">{item.status === "present" && item.departureTime ? formatTime(item.departureTime) : "-"}</TableCell>
                 <TableCell className="text-center">{item.status === "present" ? item.penjemput : "-"}</TableCell>
                 <TableCell className="text-center">
                   <span
@@ -916,7 +964,13 @@ export default function PresensiAnakPage() {
                   <Button className="mr-2" onClick={() => handleEdit(item)}>
                     Edit
                   </Button>
-                  <Button className="bg-red-500 text-white" onClick={() => { setSelectedAttendanceId(item.id); setIsDeleteDialogOpen(true); }}>
+                  <Button
+                    className="bg-red-500 text-white"
+                    onClick={() => {
+                      setSelectedAttendanceId(item.id);
+                      setIsDeleteDialogOpen(true);
+                    }}
+                  >
                     Delete
                   </Button>
                 </TableCell>
@@ -925,19 +979,15 @@ export default function PresensiAnakPage() {
           </TableBody>
         </Table>
       </div>
-     <div className="space-x-2">
-          
-        </div>
+      <div className="space-x-2"></div>
       <div className="w-full flex justify-end mt-8 print-hide gap-2">
         <Link href="/laporan/presensi-anak/sampah">
-            <Button className="bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl px-4">
-              Sampah
-            </Button>
-          </Link>
+          <Button className="bg-gray-500 hover:bg-gray-600 text-white font-semibold rounded-xl px-4">Sampah</Button>
+        </Link>
         <Button onClick={handlePrint} className="bg-primary px-4 rounded-lg text-white font-semibold">
           Cetak PDF
         </Button>
-        
+
         <Link href={"/laporan"}>
           <Button className="bg-primary px-4 rounded-lg text-white font-semibold">Kembali</Button>
         </Link>

@@ -1,3 +1,5 @@
+// src/app/(pages)/laporan/detail/[id]/_partials/DetailPerkembangan.jsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -28,44 +30,45 @@ export default function DetailPerkembangan() {
   const [progressId, setProgressId] = useState(null);
 
   useEffect(() => {
-    fetchProgressId();
-    fetchProgressDetails();
-  }, [id]);
+  fetchProgressId();
+  fetchProgressDetails();
+  console.log("Current childId from params:", id); // Tambahkan ini
+}, [id]);
 
-  const fetchProgressId = async () => {
-    try {
-      const res = await fetch(`/api/admin/laporan/laporanPerkembangan?childId=${id}`);
-      const data = await res.json();
-      if (data.success && data.progress.length > 0) {
-        setProgressId(data.progress[0].id);
-      } else {
-        console.error("Failed to fetch progress ID:", data.message);
-      }
-    } catch (error) {
-      console.error("Failed to fetch progress ID:", error);
+const fetchProgressId = async () => {
+  try {
+    const res = await fetch(`/api/admin/laporan/laporanPerkembangan?childId=${id}`);
+    const data = await res.json();
+    if (data.success && data.progress.length > 0) {
+      setProgressId(data.progress[0].id);
+      console.log("Fetched Progress ID:", data.progress[0].id); // Tambahkan ini
+    } else {
+      console.error("Failed to fetch progress ID:", data.message);
     }
-  };
+  } catch (error) {
+    console.error("Failed to fetch progress ID:", error);
+  }
+};
 
   const fetchProgressDetails = async () => {
-    try {
-      const res = await fetch(`/api/admin/laporan/detailPerkembangan?childId=${id}`);
-      const data = await res.json();
-      
-      // Debug response
-      console.log('Progress Details Response:', data);
-      
-      if (data.success) {
-        // Ubah ini sesuai struktur response baru
-        setProgressDetails(data.progressDetails || []);
-      } else {
-        console.error("Failed to fetch progress details:", data.message);
-      }
-    } catch (error) {
-      console.error("Failed to fetch progress details:", error);
-    } finally {
-      setLoading(false);
+  try {
+    const res = await fetch(`/api/admin/laporan/detailPerkembangan?childId=${id}`);
+    const data = await res.json();
+
+    // Debug response
+    console.log('Progress Details Response:', data); // Ini sudah ada, pastikan tidak dihapus
+
+    if (data.success) {
+      setProgressDetails(data.progressDetails || []);
+    } else {
+      console.error("Failed to fetch progress details:", data.message);
     }
-  };
+  } catch (error) {
+    console.error("Failed to fetch progress details:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleCategoryChange = (value) => {
     setFormData({
@@ -100,30 +103,31 @@ export default function DetailPerkembangan() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!progressId) {
-      console.error("Progress ID is not available");
-      return;
+  e.preventDefault();
+  if (!progressId) {
+    console.error("Progress ID is not available");
+    return;
+  }
+  try {
+    const res = await fetch("/api/admin/laporan/detailPerkembangan", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ...formData, progressId }),
+    });
+    const data = await res.json();
+    console.log("Response from POST API:", data); // Tambahkan ini
+    if (data.success) {
+      fetchProgressDetails();
+      setIsAddDialogOpen(false);
+    } else {
+      console.error("Failed to add progress detail:", data.message);
     }
-    try {
-      const res = await fetch("/api/admin/laporan/detailPerkembangan", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ...formData, progressId }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        fetchProgressDetails();
-        setIsAddDialogOpen(false);
-      } else {
-        console.error("Failed to add progress detail:", data.message);
-      }
-    } catch (error) {
-      console.error("Failed to add progress detail:", error);
-    }
-  };
+  } catch (error) {
+    console.error("Failed to add progress detail:", error);
+  }
+};
 
   const handleUpdate = async (e) => {
     e.preventDefault();

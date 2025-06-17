@@ -4,7 +4,14 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CldUploadWidget } from "next-cloudinary";
 
-export default function FormAnak({ status, data, onKembali, fetchChildren }) {
+export default function FormAnak({ 
+  status, 
+  data, 
+  onKembali, 
+  fetchChildren, 
+  selectedAcademicYear, 
+  selectedSemester 
+}) {
   const [formData, setFormData] = useState({
     name: "",
     parentId: "",
@@ -67,12 +74,12 @@ export default function FormAnak({ status, data, onKembali, fetchChildren }) {
     try {
       const payload = {
         ...formData,
-        parentId: parseInt(formData.parentId), // Ensure parentId is an integer
-        classId: parseInt(formData.classId), // Ensure classId is an integer
+        academicYear: selectedAcademicYear, // Gunakan filter yang dipilih
+        semester: selectedSemester,         // Gunakan filter yang dipilih
       };
 
       const method = status === "edit" ? "PUT" : "POST";
-      const res = await fetch("/api/admin/child", {
+      const res = await fetch(`/api/admin/child`, {
         method,
         headers: {
           "Content-Type": "application/json",
@@ -85,7 +92,7 @@ export default function FormAnak({ status, data, onKembali, fetchChildren }) {
       }
 
       fetchChildren(); // Update daftar anak setelah submit
-      onKembali(); // Kembali ke tampilan tabel setelah submit
+      onKembali(); // Kembali ke tampilan tabel
     } catch (error) {
       console.error(error.message);
     }

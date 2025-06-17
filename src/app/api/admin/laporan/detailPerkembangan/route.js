@@ -1,4 +1,4 @@
-// /pages/api/progressDetail/index.js
+// /src/app/admin/laporan/detailPerkembangan/route.js
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
@@ -7,34 +7,34 @@ const prisma = new PrismaClient();
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const childId = searchParams.get('childId');
+  console.log("GET API - Received childId:", childId); // Tambahkan ini
 
   if (!childId) {
-    return NextResponse.json({ 
-      success: false, 
-      message: 'childId is required' 
+    return NextResponse.json({
+      success: false,
+      message: 'childId is required'
     });
   }
 
   try {
-    // Get progress by childId
     const progress = await prisma.progress.findFirst({
-      where: { 
-        childId: parseInt(childId) 
+      where: {
+        childId: parseInt(childId)
       },
     });
+    console.log("GET API - Found Progress for childId:", progress); // Tambahkan ini
 
     if (!progress) {
-      return NextResponse.json({ 
-        success: false, 
+      return NextResponse.json({
+        success: false,
         message: 'No progress found',
-        progressDetails: [] 
+        progressDetails: []
       });
     }
 
-    // Get progressDetails with related data
     const progressDetails = await prisma.progressDetail.findMany({
-      where: { 
-        progressId: progress.id 
+      where: {
+        progressId: progress.id
       },
       include: {
         subDetails: true,
@@ -43,33 +43,34 @@ export async function GET(req) {
         id: 'asc'
       }
     });
+    console.log("GET API - Fetched Progress Details:", progressDetails); // Tambahkan ini
 
-    // Pastikan response menggunakan format yang konsisten
     return NextResponse.json({
       success: true,
-      progressDetails: progressDetails // Ubah nama property ini
+      progressDetails: progressDetails
     });
 
   } catch (error) {
-    console.error('Error:', error);
-    return NextResponse.json({ 
-      success: false, 
+    console.error('Error in GET API:', error); // Ubah pesan error
+    return NextResponse.json({
+      success: false,
       message: error.message,
-      progressDetails: [] 
+      progressDetails: []
     });
   }
 }
 
 export async function POST(req) {
   const { category, progressId, subDetails } = await req.json();
+  console.log("POST API - Received Payload:", { category, progressId, subDetails }); // Tambahkan ini
 
   try {
-    // Check if the progressId exists
     const progress = await prisma.progress.findUnique({
       where: { id: parseInt(progressId) },
     });
 
     if (!progress) {
+      console.error("POST API - Progress ID does not exist:", progressId); // Tambahkan ini
       return NextResponse.json({ success: false, error: "Progress ID does not exist" });
     }
 
@@ -85,8 +86,10 @@ export async function POST(req) {
         },
       },
     });
+    console.log("POST API - Created ProgressDetail:", progressDetail); // Tambahkan ini
     return NextResponse.json({ success: true, progressDetail });
   } catch (error) {
+    console.error("Error in POST API:", error); // Ubah pesan error
     return NextResponse.json({ success: false, error: error.message });
   }
 }
