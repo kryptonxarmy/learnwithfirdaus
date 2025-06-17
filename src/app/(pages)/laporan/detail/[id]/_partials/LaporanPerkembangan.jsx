@@ -213,179 +213,317 @@ const LaporanPerkembangan = () => {
     }
   };
 
-  const handlePrint = async () => {
+   const handlePrint = async () => {
     try {
       if (!progress || progress.length === 0) {
         throw new Error('Tidak ada data laporan perkembangan');
       }
-
-      // Fetch detail perkembangan dengan childId yang benar
+  
       const detailRes = await fetch(`/api/admin/laporan/detailPerkembangan?childId=${id}&progressId=${progress[0]?.id}`);
       const detailData = await detailRes.json();
-
+  
       if (!detailData.success) {
         throw new Error(detailData.error || 'Failed to fetch detail perkembangan');
       }
-
-      // Log data untuk debugging
-      console.log('Progress Data:', progress[0]);
-      console.log('Detail Data:', detailData);
-
+  
       const printWindow = window.open("", "", "width=900,height=650");
-      
+  
       printWindow.document.write(`
         <html>
           <head>
-            <title>Laporan Perkembangan Anak</title>
+            <title>Laporan Perkembangan Anak - TPA Duta Firdaus</title>
+            <meta charset="UTF-8">
             <style>
-              /* Atur margin halaman */
               @page {
-                margin: 40px; /* Kurangi margin untuk memberi ruang lebih */
+                margin: 2cm 1.5cm;
+                size: A4;
               }
-              
-              body { 
-                font-family: Times New Roman, serif;
-                color: #000;
-                line-height: 1.5; /* Kurangi line height */
-                margin: 0;
-                padding: 0;
+              body {
+                font-family: 'Times New Roman', serif;
+                font-size: 12px;
+                color: #2c2c2c;
+                background: white;
+                line-height: 1.5;
               }
-
-              .header {
-                text-align: center;
-                margin-bottom: 20px; /* Kurangi margin bottom */
-                border-bottom: 2px solid #000;
-                padding-bottom: 15px; /* Kurangi padding */
+              .watermark {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 120px;
+                color: rgba(30, 64, 175, 0.03);
+                font-weight: 900;
+                z-index: -1;
+                pointer-events: none;
               }
-
-              .info-section {
-                margin: 20px 0; /* Kurangi margin */
-                page-break-inside: avoid;
+              .document-header {
+                border-bottom: 3px solid #1e40af;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+                position: relative;
               }
-
-              .section-title {
-                font-size: 16px; /* Kurangi ukuran font */
+              .header-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 15px;
+              }
+              .logo-section {
+                display: flex;
+                align-items: center;
+              }
+              .logo-placeholder {
+                width: 60px;
+                height: 60px;
+                background: linear-gradient(135deg, #1e40af, #3b82f6);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
                 font-weight: bold;
-                margin: 15px 0; /* Kurangi margin */
-                background-color: #f5f5f5;
-                padding: 6px;
+                font-size: 24px;
+                margin-right: 15px;
               }
-
-              .report-container {
+              .company-info h1 {
+                font-size: 24px;
+                font-weight: 700;
+                color: #1e40af;
+                margin-bottom: 3px;
+                letter-spacing: 0.5px;
+              }
+              .company-info p {
+                font-size: 11px;
+                color: #64748b;
+              
+              }
+              .document-meta {
+                text-align: right;
+                font-size: 10px;
+                color: #64748b;
+              }
+              .document-meta .doc-number {
+                font-weight: 600;
+                color: #1e40af;
+                font-size: 11px;
+              }
+              .document-title {
+                text-align: center;
+                margin-bottom: 25px;
+                padding: 15px 0;
+                background: linear-gradient(90deg, #f8fafc, #e2e8f0, #f8fafc);
+                border-radius: 6px;
+              }
+              .document-title h2 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #1e293b;
+                margin-bottom: 5px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+              }
+              .document-title .subtitle {
+                font-size: 12px;
+                color: #64748b;
+                font-style: italic;
+              }
+              .info-section {
+                margin-bottom: 25px;
+                padding: 15px;
+                background: #f8fafc;
+                border-left: 4px solid #1e40af;
+                border-radius: 0 6px 6px 0;
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 15px; /* Kurangi gap */
-                margin: 15px 0;
-                page-break-inside: avoid; /* Penting: Pastikan container tidak terpotong */
+                gap: 10px 40px;
               }
-
-              .report-section {
-                page-break-inside: avoid;
+              .info-label {
+                font-size: 12px;
+                color: #64748b;
+                font-weight: 600;
+                margin-bottom: 2px;
               }
-
-              .info-grid {
-                display: grid;
-                grid-template-columns: 180px auto; /* Kurangi lebar kolom pertama */
-                gap: 6px; /* Kurangi gap */
+              .info-value {
+                font-size: 14px;
+                color: #1e293b;
+                font-weight: 600;
+                margin-bottom: 2px;
               }
-
-              .label {
+              .section-title {
+                font-size: 16px;
                 font-weight: bold;
-                font-size: 14px; /* Kurangi ukuran font */
+                margin: 20px 0 10px 0;
+                background-color: #f5f5f5;
+                padding: 8px 12px;
+                border-radius: 6px;
+                color: #1e40af;
+                letter-spacing: 0.5px;
               }
-
-              .content {
-                text-align: justify;
-                font-size: 14px; /* Kurangi ukuran font */
+              .table-container {
+                margin-bottom: 30px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                border-radius: 8px;
+                overflow: hidden;
               }
-
+              table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 11px;
+                margin-bottom: 20px;
+              }
+              th, td {
+                padding: 10px 8px;
+                text-align: left;
+                border-bottom: 1px solid #e2e8f0;
+              }
+              th {
+                background: linear-gradient(135deg, #1e40af, #3b82f6);
+                color: white;
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 10px;
+              }
               .detail-category {
-                margin: 12px 0; /* Kurangi margin */
+                margin: 12px 0 4px 0;
                 font-weight: bold;
+                color: #1e40af;
+                font-size: 13px;
               }
-
               .sub-category {
-                margin: 4px 0 4px 15px; /* Kurangi margin */
-                font-size: 14px; /* Kurangi ukuran font */
+                margin: 2px 0 2px 18px;
+                font-size: 12px;
+                color: #1e293b;
               }
-
-              /* Hapus media print yang tidak perlu */
+              .document-footer {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 2px solid #e2e8f0;
+                display: flex;
+                justify-content: space-between;
+                align-items: end;
+              }
+              .footer-left {
+                font-size: 10px;
+                color: #64748b;
+              }
+              .signature-section {
+                text-align: center;
+                min-width: 200px;
+              }
+              .signature-title {
+                font-size: 11px;
+                color: #1e293b;
+                margin-bottom: 50px;
+                font-weight: 600;
+              }
+              .signature-line {
+                border-bottom: 1px solid #1e293b;
+                margin-bottom: 5px;
+                height: 1px;
+              }
+              .signature-name {
+                font-size: 11px;
+                color: #1e293b;
+                font-weight: 600;
+              }
+              .signature-title-below {
+                font-size: 10px;
+                color: #64748b;
+              }
               @media print {
-                .report-container {
-                  break-inside: avoid; /* Pastikan container tidak terpotong saat print */
+                body {
+                  -webkit-print-color-adjust: exact;
+                  color-adjust: exact;
                 }
               }
             </style>
-
           </head>
           <body>
-            <div class="header">
-              <h1>LAPORAN PERKEMBANGAN ANAK</h1>
-              <p>LearnWithFirdaus</p>
-            </div>
-
-            <div class="info-section">
-              <div class="section-title">Informasi Anak</div>
-              <div class="info-grid">
-                <div class="label">Nama</div>
-                <div class="content">: ${progress[0]?.child?.name || "N/A"}</div>
-                <div class="label">Nomor Induk</div>
-                <div class="content">: ${progress[0]?.child?.studentId || "N/A"}</div>
-                <div class="label">Semester</div>
-                <div class="content">: ${progress[0]?.semester?.number || "N/A"}</div>
-                <div class="label">Tahun Ajaran</div>
-                <div class="content">: ${progress[0]?.academicYear?.year || "N/A"}</div>
-              </div>
-            </div>
-
-            <div class="report-container">
-              <div class="report-section">
-                <div class="section-title">Aspek Perkembangan</div>
-                <div class="info-grid">
-                  <div class="label">Nilai Moral</div>
-                  <div class="content">: ${progress[0]?.moralValue || "N/A"}</div>
-                  <div class="label">Motorik Kasar</div>
-                  <div class="content">: ${progress[0]?.motorGross || "N/A"}</div>
-                  <div class="label">Motorik Halus</div>
-                  <div class="content">: ${progress[0]?.motorFine || "N/A"}</div>
-                  <div class="label">Kognitif</div>
-                  <div class="content">: ${progress[0]?.cognitive || "N/A"}</div>
-                  <div class="label">Bahasa</div>
-                  <div class="content">: ${progress[0]?.language || "N/A"}</div>
-                  <div class="label">Sosial</div>
-                  <div class="content">: ${progress[0]?.social || "N/A"}</div>
-                  <div class="label">Refleksi</div>
-                  <div class="content">: ${progress[0]?.reflection || "N/A"}</div>
-                  <div class="label">Komentar</div>
-                  <div class="content">: ${progress[0]?.comments || "N/A"}</div>
+            <div class="watermark">TPA DUTA FIRDAUS</div>
+            <div class="document-header">
+              <div class="header-top">
+                <div class="logo-section">
+                  <div class="logo-placeholder">TDF</div>
+                  <div class="company-info">
+                    <h1>TPA DUTA FIRDAUS</h1>
+                    <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+                    <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
+                  </div>
+                </div>
+                <div class="document-meta">
+                  <div class="doc-number">DOC/TDF/LAPORAN-PERKEMBANGAN/${new Date().getFullYear()}/${String(new Date().getMonth() + 1).padStart(2, "0")}/${String(new Date().getDate()).padStart(2, "0")}</div>
+                  <div>Tanggal Cetak: ${new Date().toLocaleDateString("id-ID")}</div>
+                  <div>Halaman 1 dari 1</div>
                 </div>
               </div>
-              
-              <div class="report-section">
-                <div class="section-title">Detail Perkembangan</div>
-                ${detailData.progressDetails?.length > 0 
+            </div>
+            <div class="document-title">
+              <h2>Laporan Perkembangan Anak Didik</h2>
+              <div class="subtitle">Semester ${progress[0]?.semester?.number || "N/A"} - Tahun Ajaran ${progress[0]?.academicYear?.year || "N/A"}</div>
+            </div>
+            <div class="info-section">
+              <div>
+                <div class="info-label">Nama Anak</div>
+                <div class="info-value">${progress[0]?.child?.name || "N/A"}</div>
+              </div>
+              <div>
+                <div class="info-label">Nomor Induk</div>
+                <div class="info-value">${progress[0]?.child?.studentId || "N/A"}</div>
+              </div>
+              <div>
+                <div class="info-label">Semester</div>
+                <div class="info-value">${progress[0]?.semester?.number || "N/A"}</div>
+              </div>
+              <div>
+                <div class="info-label">Tahun Ajaran</div>
+                <div class="info-value">${progress[0]?.academicYear?.year || "N/A"}</div>
+              </div>
+            </div>
+            <div class="section-title">Aspek Perkembangan</div>
+            <table>
+              <tbody>
+                <tr><th>Nilai Moral</th><td>${progress[0]?.moralValue || "N/A"}</td></tr>
+                <tr><th>Motorik Kasar</th><td>${progress[0]?.motorGross || "N/A"}</td></tr>
+                <tr><th>Motorik Halus</th><td>${progress[0]?.motorFine || "N/A"}</td></tr>
+                <tr><th>Kognitif</th><td>${progress[0]?.cognitive || "N/A"}</td></tr>
+                <tr><th>Bahasa</th><td>${progress[0]?.language || "N/A"}</td></tr>
+                <tr><th>Sosial</th><td>${progress[0]?.social || "N/A"}</td></tr>
+                <tr><th>Refleksi</th><td>${progress[0]?.reflection || "N/A"}</td></tr>
+                <tr><th>Komentar</th><td>${progress[0]?.comments || "N/A"}</td></tr>
+              </tbody>
+            </table>
+            <div class="section-title">Detail Perkembangan</div>
+            <div>
+              ${
+                detailData.progressDetails?.length > 0
                   ? detailData.progressDetails.map(detail => `
                       <div class="detail-category">${detail.category}</div>
                       ${detail.subDetails?.map(sub => `
                         <div class="sub-category">• ${sub.subCategory}: ${sub.status}</div>
                       `).join('')}
                     `).join('')
-                  : '<div class="content">Tidak ada detail perkembangan</div>'
-                }
+                  : '<div class="info-value">Tidak ada detail perkembangan</div>'
+              }
+            </div>
+            <div class="document-footer">
+              <div class="footer-left">
+                <div><strong>TPA Duta Firdaus</strong></div>
+                <div>Dokumen ini digenerate secara otomatis oleh sistem</div>
+                <div>© ${new Date().getFullYear()} TPA Duta Firdaus. All rights reserved.</div>
               </div>
+              
             </div>
           </body>
         </html>
       `);
-
-      // Tambahkan timeout kecil untuk memastikan data terload
+  
       printWindow.document.close();
       setTimeout(() => {
         printWindow.focus();
         printWindow.print();
         printWindow.close();
       }, 250);
-
+  
     } catch (error) {
       console.error("Error printing:", error);
       alert('Gagal mencetak laporan: ' + error.message);
@@ -433,10 +571,10 @@ const LaporanPerkembangan = () => {
                 Isi form berikut untuk menambahkan data perkembangan anak baru
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit}>
+                        <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 max-h-[60vh] overflow-scroll gap-4">
                 <div>
-                  <Label htmlFor="date">Date</Label>
+                  <Label htmlFor="date">Tanggal</Label>
                   <Input
                     id="date"
                     name="date"
@@ -447,7 +585,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="moralValue">Moral Value</Label>
+                  <Label htmlFor="moralValue">Nilai Moral</Label>
                   <Input
                     id="moralValue"
                     name="moralValue"
@@ -458,7 +596,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="motorGross">Motor Gross</Label>
+                  <Label htmlFor="motorGross">Motorik Kasar</Label>
                   <Input
                     id="motorGross"
                     name="motorGross"
@@ -469,7 +607,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="motorFine">Motor Fine</Label>
+                  <Label htmlFor="motorFine">Motorik Halus</Label>
                   <Input
                     id="motorFine"
                     name="motorFine"
@@ -480,7 +618,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="cognitive">Cognitive</Label>
+                  <Label htmlFor="cognitive">Kognitif</Label>
                   <Input
                     id="cognitive"
                     name="cognitive"
@@ -491,7 +629,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="language">Language</Label>
+                  <Label htmlFor="language">Bahasa</Label>
                   <Input
                     id="language"
                     name="language"
@@ -502,7 +640,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="social">Social</Label>
+                  <Label htmlFor="social">Sosial</Label>
                   <Input
                     id="social"
                     name="social"
@@ -513,7 +651,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="reflection">Reflection</Label>
+                  <Label htmlFor="reflection">Refleksi</Label>
                   <Input
                     id="reflection"
                     name="reflection"
@@ -524,7 +662,7 @@ const LaporanPerkembangan = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="comments">Comments</Label>
+                  <Label htmlFor="comments">Komentar</Label>
                   <Input
                     id="comments"
                     name="comments"
@@ -553,7 +691,7 @@ const LaporanPerkembangan = () => {
                   </select>
                 </div>
                 <div>
-                  <Label htmlFor="academicYearId">Tahun Ajar</Label>
+                  <Label htmlFor="academicYearId">Tahun Ajaran</Label>
                   <select
                     id="academicYearId"
                     name="academicYearId"
@@ -562,7 +700,7 @@ const LaporanPerkembangan = () => {
                     className="border border-gray-300 rounded-md p-2"
                     required
                   >
-                    <option value="">Pilih Tahun Ajar</option>
+                    <option value="">Pilih Tahun Ajaran</option>
                     {academicYears.map((year) => (
                       <option key={year.id} value={year.id}>
                         {year.year}
@@ -572,7 +710,7 @@ const LaporanPerkembangan = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit">Save</Button>
+                <Button type="submit">Simpan</Button>
               </DialogFooter>
             </form>
           </DialogContent>

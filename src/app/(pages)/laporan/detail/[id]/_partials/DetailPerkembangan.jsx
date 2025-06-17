@@ -1,7 +1,5 @@
 // src/app/(pages)/laporan/detail/[id]/_partials/DetailPerkembangan.jsx
 
-// src/app/(pages)/laporan/detail/[id]/_partials/DetailPerkembangan.jsx
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -13,15 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import Stepper from "../../../[id]/Stepper";
 
-
-
 const categoryOptions = ["Kepekaan Panca Indra", "Motorik Kasar", "Motorik Halus", "Kemampuan Berkomunikasi", "Reaksi Emosi dan Interaksi Sosial", "Kemampuan Kognitif"];
 
 export default function DetailPerkembangan() {
   const { id } = useParams();
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [progressDetails, setProgressDetails] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // Tambahkan state error
   const steps = ["Belum Berkembang", "Sedang Berkembang", "Berkembang Baik"];
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -31,54 +28,63 @@ export default function DetailPerkembangan() {
   });
   const [progressId, setProgressId] = useState(null);
 
+  // Jika tidak ada id, tampilkan pesan data tidak ada
+  if (!id) {
+    return (
+      <div className="flex justify-center items-center min-h-[300px] text-lg text-red-500 font-semibold">
+        Data tidak ada
+      </div>
+    );
+  }
+
   useEffect(() => {
-  fetchProgressId();
-}, [id]);
+    fetchProgressId();
+  }, [id]);
 
-useEffect(() => {
-  if (progressId) {
-    fetchProgressDetails();
-  }
-}, [progressId]);
-
-const fetchProgressId = async () => {
-  try {
-    const res = await fetch(`/api/admin/laporan/laporanPerkembangan?childId=${id}`);
-    const data = await res.json();
-    if (data.success && data.progress.length > 0) {
-      setProgressId(data.progress[0].id);
-      console.log("Fetched Progress ID:", data.progress[0].id); // Tambahkan ini
-    } else {
-      console.error("Failed to fetch progress ID:", data.message);
+  useEffect(() => {
+    if (progressId) {
+      fetchProgressDetails();
     }
-  } catch (error) {
-    console.error("Failed to fetch progress ID:", error);
-  }
-};
+  }, [progressId]);
+
+  const fetchProgressId = async () => {
+    try {
+      const res = await fetch(`/api/admin/laporan/laporanPerkembangan?childId=${id}`);
+      const data = await res.json();
+      if (data.success && data.progress.length > 0) {
+        setProgressId(data.progress[0].id);
+        console.log("Fetched Progress ID:", data.progress[0].id); // Tambahkan ini
+      } else {
+        setError("Tidak ada data perkembangan untuk anak ini.");
+      }
+    } catch (error) {
+      setError("Gagal mengambil data perkembangan.");
+    }
+  };
 
   const fetchProgressDetails = async () => {
-  try {
-    if (!progressId) {
-      console.log("No progress ID available yet");
-      return;
-    }
-    
-    const res = await fetch(`/api/admin/laporan/detailPerkembangan?progressId=${progressId}`);
-    const data = await res.json();
+    try {
+      if (!progressId) {
+        console.log("No progress ID available yet");
+        return;
+      }
 
-    console.log('Progress Details Response:', data);
+      const res = await fetch(`/api/admin/laporan/detailPerkembangan?progressId=${progressId}`);
+      const data = await res.json();
 
-    if (data.success) {
-      setProgressDetails(data.progressDetails || []);
-    } else {
-      console.error("Failed to fetch progress details:", data.message);
+      console.log('Progress Details Response:', data);
+
+      if (data.success) {
+        setProgressDetails(data.progressDetails || []);
+      } else {
+        console.error("Failed to fetch progress details:", data.message);
+      }
+    } catch (error) {
+      console.error("Failed to fetch progress details:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Failed to fetch progress details:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const handleCategoryChange = (value) => {
     setFormData({
@@ -113,31 +119,31 @@ const fetchProgressId = async () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!progressId) {
-    console.error("Progress ID is not available");
-    return;
-  }
-  try {
-    const res = await fetch("/api/admin/laporan/detailPerkembangan", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ ...formData, progressId }),
-    });
-    const data = await res.json();
-    console.log("Response from POST API:", data); // Tambahkan ini
-    if (data.success) {
-      fetchProgressDetails();
-      setIsAddDialogOpen(false);
-    } else {
-      console.error("Failed to add progress detail:", data.message);
+    e.preventDefault();
+    if (!progressId) {
+      console.error("Progress ID is not available");
+      return;
     }
-  } catch (error) {
-    console.error("Failed to add progress detail:", error);
-  }
-};
+    try {
+      const res = await fetch("/api/admin/laporan/detailPerkembangan", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...formData, progressId }),
+      });
+      const data = await res.json();
+      console.log("Response from POST API:", data); // Tambahkan ini
+      if (data.success) {
+        fetchProgressDetails();
+        setIsAddDialogOpen(false);
+      } else {
+        console.error("Failed to add progress detail:", data.message);
+      }
+    } catch (error) {
+      console.error("Failed to add progress detail:", error);
+    }
+  };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -212,6 +218,14 @@ const fetchProgressId = async () => {
     return <div>Loading...</div>;
   }
 
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-[300px] text-lg shadow-lg rounded-xl border-2 font-semibold">
+        {error}
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mt-6 flex flex-col gap-6">
@@ -245,27 +259,6 @@ const fetchProgressId = async () => {
               </div>
               {selectedDetail && selectedDetail.id === item.id && (
                 <div className="mt-4">
-                  {/* {item.subDetails.map((subDetail, index) => (
-                    <div key={index} className="flex flex-col border-2 border-gray-300 p-3 rounded-xl shadow- mb-4">
-                      <p className="font-semibold">{subDetail.subCategory}</p>
-                      <div className="flex items-center gap-4 mt-4">
-                        <div className="flex items-center gap-2 relative">
-                          <div className={`w-8 h-8 rounded-full border-2 ${subDetail.status === "Belum Berkembang" ? "bg-primary border-primary" : "border-primary"}`}></div>
-                          <div className="absolute left-4 top-4 w-8 h-8 border-t-2 border-primary"></div>
-                          <span className="absolute left-0 top-10 text-xs">Belum Berkembang</span>
-                        </div>
-                        <div className="flex items-center gap-2 relative">
-                          <div className={`w-8 h-8 rounded-full border-2 ${subDetail.status === "Sedang Berkembang" ? "bg-primary border-primary" : "border-primary"}`}></div>
-                          <div className="absolute left-4 top-4 w-8 h-8 border-t-2 border-primary"></div>
-                          <span className="absolute left-0 top-10 text-xs">Sedang Berkembang</span>
-                        </div>
-                        <div className="flex items-center gap-2 relative">
-                          <div className={`w-8 h-8 rounded-full border-2 ${subDetail.status === "Berkembang Baik" ? "bg-primary border-primary" : "border-primary"}`}></div>
-                          <span className="absolute left-0 top-10 text-xs">Berkembang Baik</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))} */}
                   {item.subDetails.map((subDetail, index) => {
                     const currentStep = steps.indexOf(subDetail.status);
                     return (

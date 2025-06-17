@@ -142,13 +142,13 @@ export default function Aktivitas() {
                 <h1 className="text-lg text-primary font-semibold 2xl:text-2xl text-center">
                   PROFIL PELAJAR PANCASILA YANG BERKAITAN
                 </h1>
-                <div dangerouslySetInnerHTML={{ __html: selectedModule ? selectedModule.pancasilaDesc : "Tuliskan Deskripsi..." }} />
+                <div dangerouslySetInnerHTML={{ __html: selectedModule ? selectedModule.pancasilaDesc : "Belum ada data, harap memilih Modul ajar/menambahkannya terlebih dahulu" }} />
               </div>
               <div className="flex flex-col p-4 2xl:flex-1 2xl:h-96 2xl:p-10 gap-4 bg-[#E2D4F780] rounded-xl">
                 <h1 className="text-lg text-primary font-semibold 2xl:text-2xl text-center">
                   SARANA DAN PRASARANA
                 </h1>
-                <div dangerouslySetInnerHTML={{ __html: selectedModule ? selectedModule.facilityDesc : "Tuliskan Deskripsi..." }} />
+                <div dangerouslySetInnerHTML={{ __html: selectedModule ? selectedModule.facilityDesc : "Belum ada data, harap memilih Modul ajar/menambahkannya terlebih dahulu" }} />
               </div>
             </div>
             <p

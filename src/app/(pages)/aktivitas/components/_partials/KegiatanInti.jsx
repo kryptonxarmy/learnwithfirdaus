@@ -144,51 +144,61 @@ export default function KegiatanInti({ data }) {
   return (
     <div>
       <h1 className="text-xl font-bold my-6">Kegiatan Inti</h1>
-      <Button onClick={handleTambah} className="bg-primary text-white font-semibold rounded-xl px-4 mb-4">
-        Tambah Kegiatan
-      </Button>
-      <div className="mb-4">
-        <label htmlFor="week" className="mr-2">Pilih Minggu:</label>
-        <select id="week" value={selectedWeek} onChange={(e) => setSelectedWeek(parseInt(e.target.value))} className="border border-gray-300 rounded-md p-2">
-          {[...Array(16).keys()].map((week) => (
-            <option key={week + 1} value={week + 1}>
-              Minggu {week + 1}
-            </option>
-          ))}
-        </select>
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col">
+          <label htmlFor="week" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <span className="inline-block bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">#</span>
+            Pilih Minggu
+          </label>
+          <select id="week" value={selectedWeek} onChange={(e) => setSelectedWeek(parseInt(e.target.value))} className="border border-gray-300 rounded-lg p-3 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-primary transition">
+            {[...Array(16).keys()].map((week) => (
+              <option key={week + 1} value={week + 1}>
+                Minggu {week + 1}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col">
+          <label htmlFor="class" className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <span className="inline-block bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">🏫</span>
+            Pilih Kelas
+          </label>
+          <select id="class" value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="border border-gray-300 rounded-lg p-3 min-w-[140px] focus:outline-none focus:ring-2 focus:ring-primary transition">
+            {classes.map((cls) => (
+              <option key={cls.id} value={cls.id}>
+                {cls.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col justify-end">
+          <Button onClick={handleTambah} className="bg-primary text-white font-semibold rounded-xl px-6 py-3 shadow hover:bg-primary-700 transition">
+            Tambah Kegiatan
+          </Button>
+        </div>
       </div>
-      <div className="mb-4">
-        <label htmlFor="class" className="mr-2">Pilih Kelas:</label>
-        <select id="class" value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="border border-gray-300 rounded-md p-2">
-          {classes.map((cls) => (
-            <option key={cls.id} value={cls.id}>
-              {cls.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <table className="min-w-full bg-white">
+      <table className="min-w-full bg-white rounded-xl shadow overflow-hidden">
         <thead>
           <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hari</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktivitas</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+            <th className="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Hari</th>
+            <th className="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Aktivitas</th>
+            <th className="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Deskripsi</th>
+            <th className="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Status</th>
+            <th className="px-6 py-3 text-left text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Aksi</th>
           </tr>
         </thead>
         <tbody>
           {["Senin", "Selasa", "Rabu", "Kamis", "Jumat"].map((day) => (
-            <tr key={day}>
-              <td className="border px-4 py-2">{day}</td>
-              <td className="border px-4 space-y-4 py-2">
+            <tr key={day} className="hover:bg-blue-50 transition">
+              <td className="border px-4 py-2 font-semibold text-gray-700">{day}</td>
+              <td className="border px-4 space-y-2 py-2">
                 {getActivitiesForDay(selectedWeek, day).map((activity) => (
                   <div key={activity.id} className="mb-2">
                     {activity.title}
                   </div>
                 ))}
               </td>
-              <td className="border px-4 space-y-4 py-2">
+              <td className="border px-4 space-y-2 py-2">
                 {getActivitiesForDay(selectedWeek, day).map((activity) => (
                   <div key={activity.id} className="mb-2">
                     {activity.description}
@@ -197,18 +207,22 @@ export default function KegiatanInti({ data }) {
               </td>
               <td className="border px-4 py-2">
                 {getActivitiesForDay(selectedWeek, day).map((activity) => (
-                  <div key={activity.id} className={`px-2 py-1 rounded-full ${activity.completed ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"} mb-2`}>
+                  <div
+                    key={activity.id}
+                    className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2
+                ${activity.completed ? "bg-green-100 text-green-700 border border-green-300" : "bg-red-100 text-red-700 border border-red-300"}`}
+                  >
                     {activity.completed ? "Selesai" : "Belum"}
                   </div>
                 ))}
               </td>
-              <td className="border px-4 max-w-sm flex flex-col py-2">
+              <td className="border px-4 py-2">
                 {getActivitiesForDay(selectedWeek, day).map((activity) => (
                   <div key={activity.id} className="flex gap-2 mb-2">
-                    <Button onClick={() => handleEdit(activity)} className="bg-blue-500 text-white font-semibold rounded-xl flex-1">
+                    <Button onClick={() => handleEdit(activity)} className="bg-blue-500 text-white font-semibold rounded-xl px-3 py-1">
                       Edit
                     </Button>
-                    <Button onClick={() => handleDelete(activity.id)} className="bg-red-500 text-white font-semibold rounded-xl flex-1">
+                    <Button onClick={() => handleDelete(activity.id)} className="bg-red-500 text-white font-semibold rounded-xl px-3 py-1">
                       Delete
                     </Button>
                   </div>
@@ -219,14 +233,7 @@ export default function KegiatanInti({ data }) {
         </tbody>
       </table>
 
-      <ModalKegiatan
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        isEdit={isEdit}
-        editData={editData}
-        handleInputChange={handleInputChange}
-        handleSave={handleSave}
-      />
+      <ModalKegiatan isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} isEdit={isEdit} editData={editData} handleInputChange={handleInputChange} handleSave={handleSave} />
     </div>
   );
 }

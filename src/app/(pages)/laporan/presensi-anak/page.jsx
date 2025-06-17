@@ -689,8 +689,9 @@ export default function PresensiAnakPage() {
                   <td>${new Date(item.date).toLocaleDateString("id-ID")}</td>
                   <td style="text-align: left; padding-left: 8px;">${item.child ? item.child.name : "-"}</td>
                   <td style="text-align: left; padding-left: 8px;">${item.status === "present" ? item.pengantar || "-" : "-"}</td>
-                  <td>${item.status === "present" && item.arrivalTime ? item.arrivalTime : "-"}</td>
-                  <td>${item.status === "present" && item.departureTime ? item.departureTime : "-"}</td>
+                  <td>${item.status === "present" && item.arrivalTime ? formatTime(item.arrivalTime) : "-"}</td>
+                  <td>${item.status === "present" && item.departureTime ? formatTime(item.departureTime) : "-"}</td>
+                    
                   <td style="text-align: left; padding-left: 8px;">${item.status === "present" ? item.penjemput || "-" : "-"}</td>
                   <td>
                     <span class="status-badge ${item.status === "present" ? "status-present" : item.status === "excused" ? "status-excused" : "status-absent"}">

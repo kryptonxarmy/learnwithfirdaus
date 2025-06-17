@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Image, School, User } from "lucide-react";
+import { ArrowRight, Image, School, User, CalendarCheck, GraduationCap, Filter } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function GaleriKegiatan() {
@@ -157,57 +157,82 @@ export default function GaleriKegiatan() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-around">
-        {items.map((item, index) => (
-          <div key={index} className="flex gap-4 items-center">
-            <div className="bg-primary size-16 flex justify-center items-center text-white rounded-full">
-              <item.icon className="text-2xl" />
-            </div>
-            <div className="flex flex-col gap-1">
-              <p className="text-gray-300">{item.title}</p>
-              <p className="font-bold text-lg">{item.desc}</p>
+      {/* Filter Section */}
+      <div className="bg-white p-6 rounded-xl shadow-md border mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Filter className="text-primary" />
+          <h3 className="text-lg font-semibold text-primary">Filter Galeri Kegiatan</h3>
+        </div>
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1">
+              <GraduationCap className="w-4 h-4" /> Tahun Ajaran
+            </label>
+            <select
+              value={selectedAcademicYear}
+              onChange={(e) => setSelectedAcademicYear(e.target.value)}
+              className="border border-gray-300 rounded-lg p-3 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Pilih Tahun Ajar</option>
+              {academicYears.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.year}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-600 mb-2 flex items-center gap-1">
+              <CalendarCheck className="w-4 h-4" /> Semester
+            </label>
+            <select
+              value={selectedSemester}
+              onChange={(e) => setSelectedSemester(e.target.value)}
+              className="border border-gray-300 rounded-lg p-3 min-w-[180px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Pilih Semester</option>
+              {semesters.map((semester) => (
+                <option key={semester.id} value={semester.id}>
+                  Semester {semester.number}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label className="text-sm font-medium text-gray-600 mb-2 opacity-0">Status</label>
+            <div>
+              {selectedAcademicYear && selectedSemester ? (
+                <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 px-4 py-2 rounded-lg border border-green-200 font-medium">
+                  <span className="text-lg">✓</span> Filter aktif
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 px-4 py-2 rounded-lg border border-yellow-200 font-medium">
+                  <span className="text-lg">!</span> Pilih filter terlebih dahulu
+                </span>
+              )}
             </div>
           </div>
-        ))}
+          <div className="flex flex-col justify-end">
+            <Button
+              onClick={handleFilterChange}
+              className="bg-primary text-white font-semibold rounded-xl px-6 py-3 shadow hover:bg-primary-700 transition"
+            >
+              Filter
+            </Button>
+          </div>
+        </div>
       </div>
-      <div className="flex gap-4 mt-4">
-        <select
-          value={selectedAcademicYear}
-          onChange={(e) => setSelectedAcademicYear(e.target.value)}
-          className="input"
-        >
-          <option value="">Pilih Tahun Ajar</option>
-          {academicYears.map((year) => (
-            <option key={year.id} value={year.id}>
-              {year.year}
-            </option>
-          ))}
-        </select>
-        <select
-          value={selectedSemester}
-          onChange={(e) => setSelectedSemester(e.target.value)}
-          className="input"
-        >
-          <option value="">Pilih Semester</option>
-          {semesters.map((semester) => (
-            <option key={semester.id} value={semester.id}>
-              Semester {semester.number}
-            </option>
-          ))}
-        </select>
-        <Button onClick={handleFilterChange} className="btn btn-primary">
-          Filter
-        </Button>
-      </div>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {/* Notifikasi jika filter belum dipilih */}
       {!selectedAcademicYear || !selectedSemester ? (
-        <p className="text-center text-gray-500 mt-4">Harap memilih tahun ajar dan semester dahulu untuk menampilkan kegiatan.</p>
+        <p className="text-center text-gray-500 mt-4">
+          Harap memilih tahun ajar dan semester terlebih dahulu untuk menampilkan galeri kegiatan.
+        </p>
       ) : (
         <>
           {showForm ? (
             <div className="flex flex-col gap-4">
               <Button onClick={handleKembali} className="btn btn-secondary self-start">
-                Kembali
+                Tutup
               </Button>
               <Form onSubmit={handleFormSubmit} initialData={editData} isEdit={isEdit} selectedSemester={selectedSemester} selectedAcademicYear={selectedAcademicYear} />
             </div>
@@ -230,7 +255,7 @@ export default function GaleriKegiatan() {
                       </div>
                       <div className="flex gap-4 text-primary items-center">
                         <Link href={doc.link} target="_blank" className="text-primary">
-                          <p className="font-semibold">Lihat Selengkapnya</p>
+                          <p className="font-semibold hover:underline">Lihat Selengkapnya</p>
                         </Link>
                         <ArrowRight />
                       </div>
@@ -264,6 +289,12 @@ function Form({ onSubmit, initialData, isEdit, selectedSemester, selectedAcademi
   });
 
   useEffect(() => {
+    if (selectedAcademicYear && selectedSemester) {
+      fetchDocuments();
+    }
+  }, [selectedAcademicYear, selectedSemester]);
+
+  useEffect(() => {
     if (initialData) {
       setFormData({
         id: initialData.id,
@@ -286,23 +317,38 @@ function Form({ onSubmit, initialData, isEdit, selectedSemester, selectedAcademi
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <input
-        type="text"
-        name="title"
-        value={formData.title}
-        onChange={handleChange}
-        placeholder="Title"
-        className="input"
-      />
-      <input
-        type="text"
-        name="link"
-        value={formData.link}
-        onChange={handleChange}
-        placeholder="Link"
-        className="input"
-      />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+          Judul Kegiatan
+        </label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          placeholder="Masukkan judul kegiatan"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none transition"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="link" className="block text-sm font-medium text-gray-700 mb-1">
+          Link Galeri (Google Drive, dll)
+        </label>
+        <input
+          type="text"
+          id="link"
+          name="link"
+          value={formData.link}
+          onChange={handleChange}
+          placeholder="Masukkan link galeri"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary focus:outline-none transition"
+          required
+        />
+      </div>
+      {/* Hidden inputs tetap */}
       <input
         type="hidden"
         name="semesterId"
@@ -315,7 +361,7 @@ function Form({ onSubmit, initialData, isEdit, selectedSemester, selectedAcademi
         value={formData.academicYearId}
         onChange={handleChange}
       />
-      <Button type="submit" className="btn btn-primary">
+      <Button type="submit" className="bg-primary text-white font-semibold rounded-xl px-4 py-2 mt-2">
         {isEdit ? "Update" : "Submit"}
       </Button>
     </form>

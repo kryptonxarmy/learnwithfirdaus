@@ -194,7 +194,7 @@ export default function Page() {
   };
 
   // PRINT ONLY TABLE
-  const handlePrint = () => {
+   const handlePrint = () => {
     const printContent = document.getElementById("print-area").innerHTML;
     const iframe = document.createElement("iframe");
     iframe.style.position = "absolute";
@@ -202,18 +202,21 @@ export default function Page() {
     iframe.style.height = "0px";
     iframe.style.border = "none";
     document.body.appendChild(iframe);
-
+  
     const doc = iframe.contentWindow.document;
     const currentDate = new Date().toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-
-    // Ganti dengan semester & tahun ajaran yang sesuai jika ada filter
-    const selectedSemesterName = selectedSemester ? semesters.find((s) => s.id == selectedSemester)?.number || "Semua" : "Semua";
-    const selectedAcademicYearName = selectedAcademicYear ? academicYears.find((y) => y.id == selectedAcademicYear)?.year || "Semua" : "Semua";
-
+  
+    const selectedSemesterName = selectedSemester
+      ? semesters.find((s) => s.id == selectedSemester)?.number || "Semua"
+      : "Semua";
+    const selectedAcademicYearName = selectedAcademicYear
+      ? academicYears.find((y) => y.id == selectedAcademicYear)?.year || "Semua"
+      : "Semua";
+  
     doc.write(`
       <html>
         <head>
@@ -282,9 +285,9 @@ export default function Page() {
               <div class="logo-section">
                 <div class="logo-placeholder">TDF</div>
                 <div class="company-info">
-                 <h1>TPA DUTA FIRDAUS</h1>
-              <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
-              <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
+                  <h1>TPA DUTA FIRDAUS</h1>
+                  <p>Yayasan Baitush Sholihin Bandung, Kanayakan Dalam No.06 Bandung</p>
+                  <p>Telp/Fax: (022) 2512386 | Email: info@tpadutafirdaus.ac.id</p>
                 </div>
               </div>
               <div class="document-meta">
@@ -384,17 +387,23 @@ export default function Page() {
               <div>Dokumen ini digenerate secara otomatis oleh sistem</div>
               <div>© ${new Date().getFullYear()} TPA Duta Firdaus. All rights reserved.</div>
             </div>
-            
+            <div class="signature-section">
+              <div class="signature-title">Mengetahui,</div>
+              <div class="signature-title">Kepala Sekolah</div>
+              <div style="margin: 50px 0 10px 0;"></div>
+              <div class="signature-line"></div>
+              <div class="signature-name">Dr. Ahmad Firdaus, M.Pd</div>
+              <div class="signature-title-below">NIP: 19801234567890123456</div>
+            </div>
           </div>
         </body>
       </html>
     `);
-
+  
     doc.close();
     iframe.contentWindow.print();
     document.body.removeChild(iframe);
   };
-
   return (
     <div className="p-6">
       <Toaster />
@@ -468,30 +477,15 @@ export default function Page() {
             <DialogTitle>{isEditMode ? "Edit Presensi" : "Tambah Presensi"}</DialogTitle>
             <DialogDescription>Isi form berikut untuk {isEditMode ? "mengedit" : "menambahkan"} data presensi.</DialogDescription>
           </DialogHeader>
-                    <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-4">
               <div>
-                <Label htmlFor="date" className="mb-1 block">Tanggal</Label>
-                <Input
-                  id="date"
-                  name="date"
-                  type="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                />
+                <Label htmlFor="date">Tanggal</Label>
+                <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
               </div>
               <div>
-                <Label htmlFor="teacherId" className="mb-1 block">Nama Guru</Label>
-                <select
-                  id="teacherId"
-                  name="teacherId"
-                  value={formData.teacherId}
-                  onChange={handleInputChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  required
-                >
+                <Label htmlFor="teacherId">Nama Guru</Label>
+                <select id="teacherId" name="teacherId" value={formData.teacherId} onChange={handleInputChange} className="border border-gray-300 rounded-md p-2" required>
                   <option value="">Pilih Guru</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
@@ -501,61 +495,28 @@ export default function Page() {
                 </select>
               </div>
               <div>
-                <Label htmlFor="status" className="mb-1 block">Status Kehadiran</Label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  required
-                >
+                <Label htmlFor="status">Status</Label>
+                <select id="status" name="status" value={formData.status} onChange={handleInputChange} className="border border-gray-300 rounded-md p-2" required>
                   <option value="present">Hadir</option>
                   <option value="excused">Sakit</option>
                   <option value="absent">Alpa</option>
                 </select>
               </div>
               <div>
-                <Label htmlFor="remarks" className="mb-1 block">Keterangan</Label>
-                <Input
-                  id="remarks"
-                  name="remarks"
-                  type="text"
-                  value={formData.remarks}
-                  onChange={handleInputChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  placeholder="Contoh: Izin dokter, dll"
-                />
+                <Label htmlFor="arrivalTime">Jam Datang</Label>
+                <Input id="arrivalTime" name="arrivalTime" type="time" value={formData.arrivalTime} onChange={handleInputChange} disabled={formData.status !== "present"} />
               </div>
               <div>
-                <Label htmlFor="arrivalTime" className="mb-1 block">Jam Datang</Label>
-                <Input
-                  id="arrivalTime"
-                  name="arrivalTime"
-                  type="time"
-                  value={formData.arrivalTime}
-                  onChange={handleInputChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  disabled={formData.status !== "present"}
-                />
+                <Label htmlFor="departureTime">Jam Pulang</Label>
+                <Input id="departureTime" name="departureTime" type="time" value={formData.departureTime} onChange={handleInputChange} disabled={formData.status !== "present"} />
               </div>
               <div>
-                <Label htmlFor="departureTime" className="mb-1 block">Jam Pulang</Label>
-                <Input
-                  id="departureTime"
-                  name="departureTime"
-                  type="time"
-                  value={formData.departureTime}
-                  onChange={handleInputChange}
-                  className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
-                  disabled={formData.status !== "present"}
-                />
+                <Label htmlFor="remarks">Keterangan</Label>
+                <Input id="remarks" name="remarks" type="text" value={formData.remarks} onChange={handleInputChange} />
               </div>
             </div>
-            <DialogFooter className="mt-6">
-              <Button type="submit" className="w-full md:w-auto">
-                {isEditMode ? "Update" : "Simpan"}
-              </Button>
+            <DialogFooter>
+              <Button type="submit">{isEditMode ? "Update" : "Simpan"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -12,16 +12,27 @@ export default function Detail({ data }) {
   }, [data]);
   return (
     <div className="">
-      <Button onClick={() => window.location.reload()} className="bg-primary px-4 text-white">Kembali</Button>
-      <Tabs defaultValue="Capaian Pembelajaran" className="w-full">
-        <TabsList className="bg-transparent gap-2 flex">
-          <TabsTrigger value="Capaian Pembelajaran" className="focus:border-b-2 focus:border-primary font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary">
+      <Button onClick={() => window.location.reload()} className="bg-primary px-4 text-white">
+        Kembali
+      </Button>
+      <Tabs defaultValue="Capaian Pembelajaran" className="w-full mt-4">
+        <TabsList className="bg-gray-100 rounded-xl p-1 flex gap-2 shadow-inner w-fit mb-6">
+          <TabsTrigger
+            value="Capaian Pembelajaran"
+            className="transition-all px-6 py-2 rounded-lg font-semibold text-gray-700 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          >
             Capaian Pembelajaran
           </TabsTrigger>
-          <TabsTrigger value="Tujuan Kegiatan" className="focus:border-b-2 focus:border-primary font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary">
+          <TabsTrigger
+            value="Tujuan Kegiatan"
+            className="transition-all px-6 py-2 rounded-lg font-semibold text-gray-700 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          >
             Tujuan Kegiatan
           </TabsTrigger>
-          <TabsTrigger value="Kegiatan Inti" className="focus:border-b-2 focus:border-primary font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary">
+          <TabsTrigger
+            value="Kegiatan Inti"
+            className="transition-all px-6 py-2 rounded-lg font-semibold text-gray-700 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          >
             Kegiatan Inti
           </TabsTrigger>
         </TabsList>

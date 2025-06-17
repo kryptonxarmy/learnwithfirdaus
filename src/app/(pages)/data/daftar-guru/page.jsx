@@ -543,14 +543,7 @@ export default function Page() {
               <div>Dokumen ini digenerate secara otomatis oleh sistem</div>
               <div>© ${new Date().getFullYear()} TPA Duta Firdaus. All rights reserved.</div>
             </div>
-            <div class="signature-section">
-              <div class="signature-title">Mengetahui,</div>
-              <div class="signature-title">Kepala Sekolah</div>
-              <div style="margin: 50px 0 10px 0;"></div>
-              <div class="signature-line"></div>
-              <div class="signature-name">Dr. Ahmad Firdaus, M.Pd</div>
-              <div class="signature-title-below">NIP: 19801234567890123456</div>
-            </div>
+            
           </div>
         </body>
       </html>

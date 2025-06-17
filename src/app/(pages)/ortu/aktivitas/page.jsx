@@ -90,82 +90,65 @@ export default function KegiatanIntiOrtu() {
   return (
     <div>
       <h1 className="text-2xl font-bold my-6">Aktivitas</h1>
-      <div className="mb-4 flex gap-4">
-        <div>
-          <label htmlFor="child" className="mr-2">
-            Pilih Anak:
-          </label>
-          <select
-            id="child"
-            value={selectedChild}
-            onChange={(e) => setSelectedChild(e.target.value)}
-            className="border border-gray-300 rounded-md p-2"
-          >
-            <option value="">Pilih Anak</option>
-            {children.map((child) => (
-              <option key={child.id} value={child.id}>
-                {child.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="academicYear" className="mr-2">
-            Pilih Tahun Ajar:
-          </label>
-          <select
-            id="academicYear"
-            value={selectedAcademicYear}
-            onChange={(e) => setSelectedAcademicYear(e.target.value)}
-            className="border border-gray-300 rounded-md p-2"
-          >
-            <option value="">Pilih Tahun Ajar</option>
-            {academicYears.map((year) => (
-              <option key={year.id} value={year.id}>
-                {year.year}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="semester" className="mr-2">
-            Pilih Semester:
-          </label>
-          <select
-            id="semester"
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-            className="border border-gray-300 rounded-md p-2"
-          >
-            <option value="">Pilih Semester</option>
-            {semesters.map((semester) => (
-              <option key={semester.id} value={semester.id}>
-                Semester {semester.number}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="week" className="mr-2">
-            Pilih Minggu:
-          </label>
-          <select
-            id="week"
-            value={selectedWeek}
-            onChange={(e) => setSelectedWeek(parseInt(e.target.value))}
-            className="border border-gray-300 rounded-md p-2"
-          >
-            {[...Array(16).keys()].map((week) => (
-              <option key={week + 1} value={week + 1}>
-                Minggu {week + 1}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <Button onClick={handleFilter} className="bg-blue-500 text-white px-4 py-2 rounded-md">
-            Filter
-          </Button>
+      <div className="bg-white p-6 rounded-xl shadow-md border mb-6">
+        <h2 className="text-lg font-semibold text-primary mb-4">Filter Aktivitas</h2>
+        <div className="flex flex-wrap gap-6 items-end">
+          <div className="flex flex-col">
+            <label htmlFor="child" className="text-sm font-medium text-gray-700 mb-2">
+              Pilih Anak
+            </label>
+            <select id="child" value={selectedChild} onChange={(e) => setSelectedChild(e.target.value)} className="border border-gray-300 rounded-lg p-3 min-w-[160px] focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="">Pilih Anak</option>
+              {children.map((child) => (
+                <option key={child.id} value={child.id}>
+                  {child.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="academicYear" className="text-sm font-medium text-gray-700 mb-2">
+              Tahun Ajaran
+            </label>
+            <select id="academicYear" value={selectedAcademicYear} onChange={(e) => setSelectedAcademicYear(e.target.value)} className="border border-gray-300 rounded-lg p-3 min-w-[160px] focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="">Pilih Tahun Ajar</option>
+              {academicYears.map((year) => (
+                <option key={year.id} value={year.id}>
+                  {year.year}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="semester" className="text-sm font-medium text-gray-700 mb-2">
+              Semester
+            </label>
+            <select id="semester" value={selectedSemester} onChange={(e) => setSelectedSemester(e.target.value)} className="border border-gray-300 rounded-lg p-3 min-w-[160px] focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="">Pilih Semester</option>
+              {semesters.map((semester) => (
+                <option key={semester.id} value={semester.id}>
+                  Semester {semester.number}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="week" className="text-sm font-medium text-gray-700 mb-2">
+              Minggu
+            </label>
+            <select id="week" value={selectedWeek} onChange={(e) => setSelectedWeek(parseInt(e.target.value))} className="border border-gray-300 rounded-lg p-3 min-w-[120px] focus:outline-none focus:ring-2 focus:ring-primary">
+              {[...Array(16).keys()].map((week) => (
+                <option key={week + 1} value={week + 1}>
+                  Minggu {week + 1}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col justify-end">
+            <Button onClick={handleFilter} className="bg-primary text-white font-semibold rounded-xl px-6 py-3 shadow hover:bg-primary-700 transition">
+              Filter
+            </Button>
+          </div>
         </div>
       </div>
       {tableData?.length === 0 ? (
@@ -173,39 +156,45 @@ export default function KegiatanIntiOrtu() {
           <p className="font-semibold">Pilih filter yang anda inginkan</p>
         </div>
       ) : (
-        <table className="min-w-full bg-white">
+        <table className="min-w-full bg-white rounded-xl shadow overflow-hidden">
           <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hari</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktivitas</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-center text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Hari</th>
+              <th className="px-6 py-3 text-center text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Aktivitas</th>
+              <th className="px-6 py-3 text-center text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Deskripsi</th>
+              <th className="px-6 py-3 text-center text-xs font-bold text-primary uppercase tracking-wider bg-blue-50">Status</th>
             </tr>
           </thead>
           <tbody>
-            {["Senin", "Selasa", "Rabu", "Kamis", "Jumat"].map((day) => (
-              <tr key={day}>
-                <td className="border px-4 py-2">{day}</td>
-                <td className="border px-4 space-y-4 py-2">
+            {["Senin", "Selasa", "Rabu", "Kamis", "Jumat"].map((day, index) => (
+              <tr key={day} className="hover:bg-blue-50 transition">
+                <td className="border px-4 py-2 font-semibold text-gray-700 text-center">{day}</td>
+                <td className="border px-4 py-2 text-center">
                   {getActivitiesForDay(selectedWeek, day).map((activity) => (
                     <div key={activity.id} className="mb-2">
                       {activity.title}
                     </div>
                   ))}
                 </td>
-                <td className="border px-4 space-y-4 py-2">
+                <td className="border px-4 py-2 text-center">
                   {getActivitiesForDay(selectedWeek, day).map((activity) => (
                     <div key={activity.id} className="mb-2">
                       {activity.description}
                     </div>
                   ))}
                 </td>
-                <td className="border px-4 py-2">
-                  {getActivitiesForDay(selectedWeek, day).map((activity) => (
-                    <div key={activity.id} className={`px-2 py-1 rounded-full ${activity.completed ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800"} mb-2`}>
-                      {activity.completed ? "Selesai" : "Belum"}
-                    </div>
-                  ))}
+                <td className="border px-4 py-2 text-center">
+                  <div className="flex flex-col items-center gap-1">
+                    {getActivitiesForDay(selectedWeek, day).map((activity) => (
+                      <div
+                        key={activity.id}
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold
+          ${activity.completed ? "bg-green-100 text-green-700 border border-green-300" : "bg-red-100 text-red-700 border border-red-300"}`}
+                      >
+                        {activity.completed ? "Selesai" : "Belum"}
+                      </div>
+                    ))}
+                  </div>
                 </td>
               </tr>
             ))}
