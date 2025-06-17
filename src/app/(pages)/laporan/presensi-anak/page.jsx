@@ -824,7 +824,6 @@ export default function PresensiAnakPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogTrigger asChild>
           <Button className="w-fit bg-primary hover:bg-primary-700 text-white font-semibold rounded-xl px-4" onClick={() => setIsDialogOpen(true)} disabled={selectedAcademicYear === "" || selectedSemester === ""}>
-            {console.log(selectedAcademicYear, "JANCOK", selectedSemester)}
             Tambah Presensi
           </Button>
         </DialogTrigger>
