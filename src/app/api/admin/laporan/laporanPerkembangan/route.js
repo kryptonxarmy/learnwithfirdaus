@@ -9,6 +9,7 @@ export async function GET(req) {
   const childId = searchParams.get("childId");
 
   const whereClause = {
+    isDeleted: false, // Tambahkan ini
     ...(childId && { childId: parseInt(childId) }),
   };
 

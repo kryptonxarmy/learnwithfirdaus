@@ -171,6 +171,8 @@ model ProgressDetail {
   category         String
   subDetails       SubCategoryDetail[] // <-- This should be an array of related subcategory details
   progress         Progress             @relation(fields: [progressId], references: [id])
+  isDeleted        Boolean             @default(false)
+  deletedAt        DateTime?
 }
 
 model SubCategoryDetail {

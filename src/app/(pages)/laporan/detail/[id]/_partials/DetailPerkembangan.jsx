@@ -1,5 +1,7 @@
 // src/app/(pages)/laporan/detail/[id]/_partials/DetailPerkembangan.jsx
 
+// src/app/(pages)/laporan/detail/[id]/_partials/DetailPerkembangan.jsx
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -31,9 +33,13 @@ export default function DetailPerkembangan() {
 
   useEffect(() => {
   fetchProgressId();
-  fetchProgressDetails();
-  console.log("Current childId from params:", id); // Tambahkan ini
 }, [id]);
+
+useEffect(() => {
+  if (progressId) {
+    fetchProgressDetails();
+  }
+}, [progressId]);
 
 const fetchProgressId = async () => {
   try {
@@ -52,11 +58,15 @@ const fetchProgressId = async () => {
 
   const fetchProgressDetails = async () => {
   try {
-    const res = await fetch(`/api/admin/laporan/detailPerkembangan?childId=${id}`);
+    if (!progressId) {
+      console.log("No progress ID available yet");
+      return;
+    }
+    
+    const res = await fetch(`/api/admin/laporan/detailPerkembangan?progressId=${progressId}`);
     const data = await res.json();
 
-    // Debug response
-    console.log('Progress Details Response:', data); // Ini sudah ada, pastikan tidak dihapus
+    console.log('Progress Details Response:', data);
 
     if (data.success) {
       setProgressDetails(data.progressDetails || []);
